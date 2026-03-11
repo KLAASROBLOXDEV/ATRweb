@@ -435,31 +435,33 @@
 
 <!-- LIVE RITTEN -->
 <div class="page" id="page-live">
-  <!-- BUSDRIVER PANEL (alleen zichtbaar als ingelogd + busdriver rol) -->
+
+  <!-- BUSDRIVER STARTPANEEL (alleen busdriver/admin/mod) -->
   <div id="myRoutePanel" style="display:none">
-    <div style="background:rgba(46,204,113,.06);border-bottom:1px solid rgba(46,204,113,.2);padding:20px 40px">
-      <div style="max-width:1100px;margin:0 auto">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <div style="background:rgba(46,204,113,.06);border-bottom:1px solid rgba(46,204,113,.2);padding:18px 40px">
+      <div style="max-width:1200px;margin:0 auto">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
           <div class="live-dot"></div>
-          <h3 style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--green)">Jouw Rit Beheren</h3>
+          <h3 style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;color:var(--green)">Jouw Rit Beheren</h3>
           <div id="myRouteStatus" style="margin-left:auto"><span class="status-badge status-finished">Geen actieve rit</span></div>
         </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end">
           <div class="form-group" style="margin:0">
             <label>Roblox gebruikersnaam</label>
             <input type="text" id="myRobloxName" placeholder="JouwRobloxNaam"/>
           </div>
           <div class="form-group" style="margin:0">
             <label>Lijn</label>
-            <select id="myLineSelect"><option value="">-- Kies lijn --</option></select>
+            <select id="myLineSelect" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;width:100%;outline:none">
+              <option value="">Laden...</option>
+            </select>
           </div>
           <div class="form-group" style="margin:0">
-            <label>Starthalte</label>
-            <input type="text" id="myCurrentStop" placeholder="bv. Centraal Station"/>
+            <label>Startlocatie (optioneel)</label>
+            <input type="text" id="myCurrentStop" placeholder="bv. Depot"/>
           </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div style="display:flex;gap:8px;padding-bottom:1px">
             <button class="btn btn-yellow" onclick="startRoute()">▶ Start</button>
-            <button class="btn btn-ghost" onclick="updateStop()">📍 Update halte</button>
             <button class="btn btn-danger" onclick="endRoute()">■ Stop</button>
           </div>
         </div>
@@ -467,24 +469,8 @@
     </div>
   </div>
 
-  <!-- ACCESS DENIED voor niet-busdrivers -->
-  <div id="liveAccessDenied" style="display:none" class="access-denied">
-    <div class="icon">🔒</div>
-    <h2>ALLEEN VOOR BUSDRIVERS</h2>
-    <p>Je hebt de busdriver rol nodig om de live kaart te zien. Vraag een admin om jou de rol toe te wijzen.</p>
-    <button class="btn btn-ghost" onclick="showPage('home')">Terug naar home</button>
-  </div>
-
-  <!-- LOGIN vereist -->
-  <div id="liveLoginRequired" style="display:none" class="access-denied">
-    <div class="icon">🚌</div>
-    <h2>LOG IN OM TE KIJKEN</h2>
-    <p>Je moet ingelogd zijn als busdriver om de live tracker te zien.</p>
-    <button class="btn btn-yellow" onclick="openModal()">Inloggen</button>
-  </div>
-
-  <!-- KAART + RITTEN (alleen voor busdrivers/staff) -->
-  <div id="liveContent" style="display:none;padding:24px 40px;max-width:1300px;margin:0 auto">
+  <!-- KAART — zichtbaar voor IEDEREEN -->
+  <div style="padding:24px 40px;max-width:1300px;margin:0 auto">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
       <div class="live-dot" style="width:12px;height:12px"></div>
       <div>
@@ -494,20 +480,23 @@
       <div id="liveCount" style="margin-left:auto;background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:4px 14px;font-size:13px;color:var(--muted)">0 actief</div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start">
+    <!-- Melding voor niet-ingelogde bezoekers -->
+    <div id="liveLookOnly" style="display:none;background:rgba(245,197,24,.06);border:1px solid rgba(245,197,24,.2);border-radius:12px;padding:12px 18px;margin-bottom:20px;font-size:13px;color:var(--yellow)">
+      👀 Je bekijkt de live kaart als bezoeker. <span style="color:var(--muted)">Log in als busdriver om zelf een rit te starten.</span>
+    </div>
 
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start">
       <!-- KAART -->
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden">
         <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px">🗺️ Lijn 1 – Kaart</span>
-          <span style="font-size:11px;color:var(--muted)">Roblox World Map</span>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px">🗺️ Live Kaart</span>
+          <span style="font-size:11px;color:var(--muted)">Roblox World</span>
         </div>
-        <div style="position:relative;background:#1a1f2e">
-          <canvas id="mapCanvas" width="700" height="480" style="width:100%;display:block"></canvas>
+        <div style="background:#13151d">
+          <canvas id="mapCanvas" width="720" height="480" style="width:100%;display:block"></canvas>
         </div>
       </div>
-
-      <!-- RITTEN LIJST -->
+      <!-- LIJST -->
       <div>
         <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;margin-bottom:12px">Actieve Bestuurders</div>
         <div id="liveGrid" style="display:flex;flex-direction:column;gap:12px">
@@ -532,6 +521,7 @@
       <div class="admin-sidebar-item active" onclick="switchAdminTab('overview')" id="tab-overview">📊 Overzicht</div>
       <div class="admin-sidebar-item" onclick="switchAdminTab('lines')" id="tab-lines">🚋 Lijnen</div>
       <div class="admin-sidebar-item" onclick="switchAdminTab('users')" id="tab-users">👥 Gebruikers</div>
+      <div class="admin-sidebar-item" onclick="switchAdminTab('livebeheer')" id="tab-livebeheer">🔴 Live Beheer</div>
       <div class="admin-sidebar-item" onclick="switchAdminTab('contacts')" id="tab-contacts">📬 Berichten</div>
     </div>
     <div class="admin-content">
@@ -566,6 +556,16 @@
             <thead><tr><th>Gebruiker</th><th>E-mail</th><th>Rol</th><th>Aangemeld</th><th>Acties</th></tr></thead>
             <tbody id="adminUsersTable"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">Laden...</td></tr></tbody>
           </table>
+        </div>
+      </div>
+      <!-- Live Beheer -->
+      <div id="adminTab-livebeheer" style="display:none">
+        <div class="admin-header" style="display:flex;align-items:flex-start;justify-content:space-between">
+          <div><h2>Live Beheer</h2><p>Actieve ritten beheren en stopzetten</p></div>
+          <button class="btn btn-ghost" onclick="loadAdminLive()">↻ Vernieuwen</button>
+        </div>
+        <div id="adminLiveList">
+          <p style="color:var(--muted)">Laden...</p>
         </div>
       </div>
       <!-- Contacts -->
@@ -1052,12 +1052,63 @@
 
   // ── Admin tab switch ───────────────────────────────────────
   window.switchAdminTab = function(tab) {
-    ["overview","lines","users","contacts"].forEach(t => {
-      document.getElementById(`adminTab-${t}`).style.display = t===tab ? "" : "none";
-      document.getElementById(`tab-${t}`).classList.toggle("active", t===tab);
+    ["overview","lines","users","livebeheer","contacts"].forEach(t => {
+      const tabEl = document.getElementById(`adminTab-${t}`);
+      const btnEl = document.getElementById(`tab-${t}`);
+      if (tabEl) tabEl.style.display = t===tab ? "" : "none";
+      if (btnEl) btnEl.classList.toggle("active", t===tab);
     });
-    if (tab === "users") loadAdminUsers();
-    if (tab === "contacts") loadAdminContacts();
+    if (tab === "users")      loadAdminUsers();
+    if (tab === "contacts")   loadAdminContacts();
+    if (tab === "livebeheer") loadAdminLive();
+  };
+
+  // Admin: live ritten beheren
+  window.loadAdminLive = function() {
+    const el = document.getElementById("adminLiveList");
+    if (!el) return;
+    onValue(ref(db, "live_routes"), snap => {
+      if (!snap.exists()) {
+        el.innerHTML = `<div class="empty-state" style="padding:40px"><div class="icon">🚌</div><p>Geen actieve ritten.</p></div>`;
+        return;
+      }
+      const routes = snap.val();
+      const active = Object.entries(routes).filter(([,r]) => r.status !== "finished");
+      if (!active.length) {
+        el.innerHTML = `<div class="empty-state" style="padding:40px"><div class="icon">🚌</div><p>Geen actieve ritten.</p></div>`;
+        return;
+      }
+      el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">${
+        active.map(([uid, r]) => `
+          <div class="driver-card driving" style="position:relative">
+            <div class="driver-card-header">
+              <div class="driver-av">${r.photoURL?`<img src="${r.photoURL}"/>`:(r.driverName||"?")[0].toUpperCase()}</div>
+              <div class="driver-info">
+                <div class="driver-name">${r.driverName||"Onbekend"}</div>
+                <div class="driver-roblox">🎮 ${r.robloxName||"—"}</div>
+              </div>
+              <div class="live-dot"></div>
+            </div>
+            <div class="driver-stat"><span class="driver-stat-label">Lijn</span>
+              <span class="driver-stat-value"><span class="line-badge" style="background:${r.lineColor||"#f5c518"};margin-right:4px">${r.lineNumber||"?"}</span>${r.lineName||"—"}</span>
+            </div>
+            <div class="driver-stat"><span class="driver-stat-label">Positie</span>
+              <span class="driver-stat-value" style="font-size:12px;font-family:monospace">X:${Math.round(r.robloxX||0)} Z:${Math.round(r.robloxZ||0)}</span>
+            </div>
+            <div class="driver-stat"><span class="driver-stat-label">Locatie</span>
+              <span class="driver-stat-value">📍 ${r.currentStop||"—"}</span>
+            </div>
+            <button class="btn btn-danger btn-sm" style="margin-top:12px;width:100%" onclick="adminForceStop('${uid}')">🛑 Rit Forceer Stoppen</button>
+          </div>`).join("")
+      }</div>`;
+    });
+  };
+
+  window.adminForceStop = async function(uid) {
+    if (currentRole !== "admin" && currentRole !== "moderator") return;
+    await update(ref(db, `live_routes/${uid}`), { status: "finished", updatedAt: Date.now() });
+    setTimeout(async () => { await remove(ref(db, `live_routes/${uid}`)); }, 5000);
+    toast("Rit gestopt door admin.");
   };
 
   // ── Page switching ─────────────────────────────────────────
@@ -1228,6 +1279,27 @@
     }
   }
 
+  // Vul lijn selector — altijd opnieuw laden uit Firebase
+  async function fillLineSelect() {
+    const sel = document.getElementById("myLineSelect");
+    if (!sel) return;
+    sel.innerHTML = '<option value="">Laden...</option>';
+    try {
+      const snap = await get(ref(db, "lines"));
+      sel.innerHTML = '<option value="">-- Kies lijn --</option>';
+      if (snap.exists()) {
+        Object.entries(snap.val()).forEach(([id, l]) => {
+          sel.innerHTML += `<option value="${id}">${l.number || "?"} – ${l.name || "Naamloos"}</option>`;
+        });
+      } else {
+        sel.innerHTML = '<option value="">Geen lijnen — voeg eerst lijnen toe in admin</option>';
+      }
+    } catch(e) {
+      sel.innerHTML = '<option value="">Fout bij laden</option>';
+      console.error("fillLineSelect:", e);
+    }
+  }
+
   // Start route
   window.startRoute = async function() {
     if (!currentUser) { toast("Log eerst in.", "err"); return; }
@@ -1281,15 +1353,17 @@
     origShowPage(page);
     if (page === "live") {
       const isBusdriver = currentUser && (currentRole === "busdriver" || currentRole === "admin" || currentRole === "moderator");
-      document.getElementById("liveLoginRequired").style.display = !currentUser ? "flex" : "none";
-      document.getElementById("liveAccessDenied").style.display  = currentUser && !isBusdriver ? "flex" : "none";
-      document.getElementById("liveContent").style.display        = isBusdriver ? "" : "none";
-      document.getElementById("myRoutePanel").style.display       = isBusdriver ? "" : "none";
-      if (isBusdriver) {
-        loadLiveRitten();
-        fillLineSelect();
-        drawMap(null);
-      }
+      // Kaart is altijd zichtbaar voor iedereen
+      // Busdriver startpaneel alleen voor busdrivers/staff
+      const panel = document.getElementById("myRoutePanel");
+      if (panel) panel.style.display = isBusdriver ? "" : "none";
+      const lookOnly = document.getElementById("liveLookOnly");
+      if (lookOnly) lookOnly.style.display = !isBusdriver ? "" : "none";
+      // Altijd laden (ook voor bezoekers)
+      loadLiveRitten();
+      drawMap(null);
+      // Lijn select alleen vullen als busdriver
+      if (isBusdriver) fillLineSelect();
     }
   };
 </script>
