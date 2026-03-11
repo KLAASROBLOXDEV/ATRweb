@@ -8,350 +8,210 @@
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
-      --bg:#0d0e12;
-      --surface:#16181f;
-      --border:#ffffff12;
-      --text:#e8eaf0;
-      --muted:#7a7d8a;
-      --yellow:#f5c518;
-      --yellow2:#ffdd57;
-      --red:#e63946;
-      --blue:#2196f3;
+      --bg:#0d0e12;--surface:#16181f;--surface2:#1e2029;
+      --border:#ffffff12;--text:#e8eaf0;--muted:#7a7d8a;
+      --yellow:#f5c518;--yellow2:#ffdd57;--red:#e63946;--green:#2ecc71;
     }
     html{scroll-behavior:smooth}
     body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;overflow-x:hidden}
+    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
 
-    /* ── SCROLLBAR ── */
-    ::-webkit-scrollbar{width:6px}
-    ::-webkit-scrollbar-track{background:var(--bg)}
-    ::-webkit-scrollbar-thumb{background:#333;border-radius:3px}
+    /* ── PAGE SYSTEM ── */
+    .page{display:none;min-height:100vh;padding-top:64px}
+    .page.active{display:block}
 
-    /* ══════════════════════════════
-       NAVBAR
-    ══════════════════════════════ */
-    nav{
-      position:fixed;top:0;left:0;right:0;z-index:100;
-      display:flex;align-items:center;justify-content:space-between;
-      padding:0 40px;height:64px;
-      background:rgba(13,14,18,0.85);
-      backdrop-filter:blur(16px);
-      border-bottom:1px solid var(--border);
-    }
-    .nav-logo{
-      display:flex;align-items:center;gap:10px;text-decoration:none;
-    }
-    .nav-logo-badge{
-      background:var(--yellow);color:#000;
-      font-family:'Bebas Neue',sans-serif;font-size:22px;
-      padding:2px 8px;border-radius:4px;letter-spacing:1px;
-    }
-    .nav-logo-text{
-      font-family:'Barlow Condensed',sans-serif;
-      font-weight:700;font-size:18px;
-      color:var(--text);letter-spacing:0.5px;line-height:1.1;
-    }
+    /* ── NAVBAR ── */
+    nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:64px;background:rgba(13,14,18,0.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
+    .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer}
+    .nav-logo img{width:38px;height:38px;border-radius:8px;object-fit:cover}
+    .nav-logo-text{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;color:var(--text);letter-spacing:.5px;line-height:1.1}
     .nav-logo-text span{display:block;font-size:10px;font-weight:600;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
-
-    .nav-links{display:flex;align-items:center;gap:28px}
-    .nav-links a{
-      color:var(--muted);text-decoration:none;
-      font-size:14px;font-weight:500;letter-spacing:0.3px;
-      transition:color .2s;
-    }
-    .nav-links a:hover{color:var(--yellow)}
-
-    /* Auth area */
+    .nav-links{display:flex;align-items:center;gap:24px}
+    .nav-links a{color:var(--muted);text-decoration:none;font-size:14px;font-weight:500;cursor:pointer;transition:color .2s;padding:4px 0;border-bottom:2px solid transparent}
+    .nav-links a:hover,.nav-links a.active{color:var(--yellow);border-bottom-color:var(--yellow)}
     #navAuthArea{display:flex;align-items:center;gap:10px}
-
-    .btn-login{
-      padding:8px 20px;border-radius:8px;
-      background:var(--yellow);color:#000;
-      font-family:'Barlow Condensed',sans-serif;
-      font-weight:700;font-size:15px;letter-spacing:0.5px;
-      border:none;cursor:pointer;
-      transition:background .2s,transform .15s;
-    }
+    .btn-login{padding:8px 20px;border-radius:8px;background:var(--yellow);color:#000;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:.5px;border:none;cursor:pointer;transition:background .2s,transform .15s}
     .btn-login:hover{background:var(--yellow2);transform:translateY(-1px)}
-
-    /* User pill (shown when logged in) */
-    .user-pill{
-      display:flex;align-items:center;gap:8px;
-      background:var(--surface);border:1px solid var(--border);
-      border-radius:100px;padding:4px 14px 4px 4px;
-      cursor:pointer;transition:border-color .2s;
-    }
+    .user-pill{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:4px 14px 4px 4px;cursor:pointer;transition:border-color .2s;position:relative}
     .user-pill:hover{border-color:var(--yellow)}
-    .user-avatar{
-      width:34px;height:34px;border-radius:50%;
-      object-fit:cover;background:#333;
-      display:flex;align-items:center;justify-content:center;
-      font-size:15px;font-weight:700;color:#fff;
-      overflow:hidden;
-    }
+    .user-avatar{width:34px;height:34px;border-radius:50%;background:#333;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;overflow:hidden;flex-shrink:0}
     .user-avatar img{width:100%;height:100%;object-fit:cover}
     .user-name{font-size:13px;font-weight:600;color:var(--text)}
-    .user-provider{font-size:10px;color:var(--muted)}
-
-    /* Dropdown */
-    .user-dropdown{
-      position:absolute;top:72px;right:40px;
-      background:var(--surface);border:1px solid var(--border);
-      border-radius:12px;padding:8px;min-width:180px;
-      box-shadow:0 16px 40px rgba(0,0,0,.5);
-      display:none;z-index:200;
-    }
+    .user-role-badge{font-size:10px;padding:1px 6px;border-radius:4px;font-weight:700;letter-spacing:.5px}
+    .role-admin{background:rgba(230,57,70,.2);color:var(--red);border:1px solid rgba(230,57,70,.3)}
+    .role-moderator{background:rgba(33,150,243,.2);color:#64b5f6;border:1px solid rgba(33,150,243,.3)}
+    .role-user{background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--border)}
+    .user-dropdown{position:fixed;top:72px;right:40px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px;min-width:190px;box-shadow:0 16px 40px rgba(0,0,0,.5);display:none;z-index:300}
     .user-dropdown.open{display:block;animation:fadeIn .15s ease}
-    .dropdown-item{
-      display:flex;align-items:center;gap:10px;
-      padding:10px 12px;border-radius:8px;
-      font-size:13px;color:var(--muted);cursor:pointer;
-      transition:background .15s,color .15s;text-decoration:none;
-    }
+    .dropdown-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:13px;color:var(--muted);cursor:pointer;transition:background .15s,color .15s}
     .dropdown-item:hover{background:rgba(255,255,255,.06);color:var(--text)}
     .dropdown-item.danger:hover{background:rgba(230,57,70,.1);color:var(--red)}
     .dropdown-divider{height:1px;background:var(--border);margin:4px 0}
 
-    /* ══════════════════════════════
-       HERO
-    ══════════════════════════════ */
-    .hero{
-      min-height:100vh;display:flex;flex-direction:column;
-      align-items:center;justify-content:center;
-      padding:100px 40px 60px;
-      position:relative;overflow:hidden;text-align:center;
-    }
-
-    /* Grid background */
-    .hero::before{
-      content:'';position:absolute;inset:0;
-      background-image:
-        linear-gradient(rgba(245,197,24,.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(245,197,24,.04) 1px, transparent 1px);
-      background-size:60px 60px;
-      mask-image:radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
-    }
-    /* Yellow glow */
-    .hero::after{
-      content:'';position:absolute;
-      width:600px;height:300px;
-      background:radial-gradient(ellipse, rgba(245,197,24,.12) 0%, transparent 70%);
-      top:50%;left:50%;transform:translate(-50%,-60%);
-      pointer-events:none;
-    }
-
-    /* Animated metro line */
-    .metro-line{
-      position:absolute;bottom:0;left:0;right:0;height:4px;
-      background:linear-gradient(90deg, transparent 0%, var(--yellow) 30%, var(--yellow) 70%, transparent 100%);
-      animation:trainPulse 3s ease-in-out infinite;
-    }
-    @keyframes trainPulse{
-      0%,100%{opacity:.3;transform:scaleX(.8)}
-      50%{opacity:1;transform:scaleX(1)}
-    }
-
-    .hero-eyebrow{
-      display:inline-flex;align-items:center;gap:8px;
-      background:rgba(245,197,24,.1);border:1px solid rgba(245,197,24,.25);
-      border-radius:100px;padding:4px 14px;
-      font-size:11px;font-weight:600;letter-spacing:2px;
-      text-transform:uppercase;color:var(--yellow);
-      margin-bottom:24px;
-      animation:slideUp .6s ease both;
-    }
+    /* ── HERO ── */
+    .hero{min-height:calc(100vh - 64px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 40px;position:relative;overflow:hidden;text-align:center}
+    .hero::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(245,197,24,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(245,197,24,.04) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 20%,transparent 100%)}
+    .hero::after{content:'';position:absolute;width:600px;height:300px;background:radial-gradient(ellipse,rgba(245,197,24,.1) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-60%);pointer-events:none}
+    .hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(245,197,24,.1);border:1px solid rgba(245,197,24,.25);border-radius:100px;padding:4px 14px;font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--yellow);margin-bottom:24px;animation:slideUp .6s ease both}
     .hero-eyebrow::before{content:'●';font-size:7px;animation:blink 2s infinite}
-    @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-
-    h1{
-      font-family:'Bebas Neue',sans-serif;
-      font-size:clamp(64px,12vw,130px);
-      line-height:.9;letter-spacing:2px;
-      margin-bottom:16px;
-      animation:slideUp .6s .1s ease both;
-    }
-    h1 .accent{color:var(--yellow);display:block}
-
-    .hero-sub{
-      font-size:18px;font-weight:300;color:var(--muted);
-      max-width:480px;line-height:1.6;margin-bottom:40px;
-      animation:slideUp .6s .2s ease both;
-    }
-
-    .hero-ctas{
-      display:flex;gap:12px;flex-wrap:wrap;justify-content:center;
-      animation:slideUp .6s .3s ease both;
-    }
-    .cta-primary{
-      padding:14px 32px;border-radius:10px;
-      background:var(--yellow);color:#000;
-      font-family:'Barlow Condensed',sans-serif;
-      font-weight:700;font-size:16px;letter-spacing:.5px;
-      border:none;cursor:pointer;
-      transition:background .2s,transform .15s,box-shadow .2s;
-      box-shadow:0 4px 20px rgba(245,197,24,.3);
-    }
+    h1.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(60px,11vw,120px);line-height:.9;letter-spacing:2px;margin-bottom:16px;animation:slideUp .6s .1s ease both}
+    h1.hero-title .accent{color:var(--yellow);display:block}
+    .hero-sub{font-size:17px;font-weight:300;color:var(--muted);max-width:480px;line-height:1.6;margin-bottom:40px;animation:slideUp .6s .2s ease both}
+    .hero-ctas{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;animation:slideUp .6s .3s ease both}
+    .cta-primary{padding:14px 32px;border-radius:10px;background:var(--yellow);color:#000;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;border:none;cursor:pointer;transition:background .2s,transform .15s,box-shadow .2s;box-shadow:0 4px 20px rgba(245,197,24,.3)}
     .cta-primary:hover{background:var(--yellow2);transform:translateY(-2px);box-shadow:0 8px 30px rgba(245,197,24,.4)}
-    .cta-secondary{
-      padding:14px 32px;border-radius:10px;
-      background:transparent;color:var(--text);
-      font-family:'Barlow Condensed',sans-serif;
-      font-weight:700;font-size:16px;letter-spacing:.5px;
-      border:1px solid var(--border);cursor:pointer;
-      transition:border-color .2s,background .2s,transform .15s;
-    }
+    .cta-secondary{padding:14px 32px;border-radius:10px;background:transparent;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px;border:1px solid var(--border);cursor:pointer;transition:border-color .2s,background .2s,transform .15s}
     .cta-secondary:hover{border-color:var(--yellow);background:rgba(245,197,24,.06);transform:translateY(-2px)}
-
-    /* Stats row */
-    .stats{
-      display:flex;gap:40px;margin-top:64px;
-      animation:slideUp .6s .4s ease both;
-    }
+    .stats{display:flex;gap:40px;margin-top:60px;animation:slideUp .6s .4s ease both}
     .stat{text-align:center}
-    .stat-num{
-      font-family:'Bebas Neue',sans-serif;font-size:36px;
-      color:var(--yellow);line-height:1;
-    }
+    .stat-num{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--yellow);line-height:1}
     .stat-label{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-top:4px}
+    .metro-line{position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,transparent 0%,var(--yellow) 30%,var(--yellow) 70%,transparent 100%);animation:trainPulse 3s ease-in-out infinite}
 
-    @keyframes slideUp{
-      from{opacity:0;transform:translateY(24px)}
-      to{opacity:1;transform:translateY(0)}
-    }
-
-    /* ══════════════════════════════
-       FEATURES SECTION
-    ══════════════════════════════ */
+    /* ── SECTION ── */
     .section{padding:80px 40px;max-width:1100px;margin:0 auto}
-    .section-label{
-      font-size:11px;font-weight:700;letter-spacing:3px;
-      text-transform:uppercase;color:var(--yellow);margin-bottom:12px;
-    }
-    .section-title{
-      font-family:'Bebas Neue',sans-serif;font-size:48px;
-      letter-spacing:1px;margin-bottom:48px;
-    }
+    .section-label{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--yellow);margin-bottom:12px}
+    .section-title{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:1px;margin-bottom:8px}
+    .section-sub{color:var(--muted);font-size:15px;margin-bottom:40px;line-height:1.6}
     .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
-    .card{
-      background:var(--surface);border:1px solid var(--border);
-      border-radius:16px;padding:28px;
-      transition:border-color .2s,transform .2s;
-    }
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;transition:border-color .2s,transform .2s}
     .card:hover{border-color:rgba(245,197,24,.3);transform:translateY(-3px)}
-    .card-icon{
-      width:44px;height:44px;border-radius:10px;
-      background:rgba(245,197,24,.1);border:1px solid rgba(245,197,24,.2);
-      display:flex;align-items:center;justify-content:center;
-      font-size:20px;margin-bottom:16px;
-    }
+    .card-icon{width:44px;height:44px;border-radius:10px;background:rgba(245,197,24,.1);border:1px solid rgba(245,197,24,.2);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px}
     .card h3{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;margin-bottom:8px}
     .card p{font-size:13px;color:var(--muted);line-height:1.6}
 
-    /* ══════════════════════════════
-       FOOTER
-    ══════════════════════════════ */
-    footer{
-      border-top:1px solid var(--border);
-      padding:32px 40px;
-      display:flex;align-items:center;justify-content:space-between;
-      color:var(--muted);font-size:13px;
-    }
+    /* ── LINES PAGE ── */
+    .lines-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-top:24px}
+    .line-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;cursor:pointer;transition:border-color .2s,transform .2s}
+    .line-card:hover{border-color:rgba(245,197,24,.4);transform:translateY(-2px)}
+    .line-number{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:22px;margin-bottom:12px;color:#000}
+    .line-name{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;margin-bottom:6px}
+    .line-route{font-size:12px;color:var(--muted);margin-bottom:8px}
+    .line-stops{font-size:11px;color:var(--muted)}
+    .line-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px;margin-top:8px}
+    .status-active{background:rgba(46,204,113,.15);color:#2ecc71;border:1px solid rgba(46,204,113,.3)}
+    .status-inactive{background:rgba(230,57,70,.15);color:var(--red);border:1px solid rgba(230,57,70,.3)}
+    .status-maintenance{background:rgba(245,197,24,.15);color:var(--yellow);border:1px solid rgba(245,197,24,.3)}
+    .empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+    .empty-state .icon{font-size:48px;margin-bottom:16px}
 
-    /* ══════════════════════════════
-       LOGIN MODAL
-    ══════════════════════════════ */
-    .modal-overlay{
-      position:fixed;inset:0;z-index:500;
-      background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
-      display:flex;align-items:center;justify-content:center;
-      opacity:0;pointer-events:none;transition:opacity .25s;
-    }
+    /* ── COMMENTS ── */
+    .comment-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px}
+    .comment-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .comment-avatar{width:32px;height:32px;border-radius:50%;background:#333;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;overflow:hidden;flex-shrink:0}
+    .comment-avatar img{width:100%;height:100%;object-fit:cover}
+    .comment-author{font-weight:600;font-size:14px}
+    .comment-date{font-size:11px;color:var(--muted);margin-left:auto}
+    .comment-text{font-size:14px;line-height:1.6;color:var(--muted)}
+    .comment-input-area{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:24px}
+    .comment-input-area textarea{width:100%;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;resize:vertical;min-height:80px;outline:none;transition:border-color .2s}
+    .comment-input-area textarea:focus{border-color:var(--yellow)}
+
+    /* ── ADMIN ── */
+    .admin-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 64px)}
+    .admin-sidebar{background:var(--surface);border-right:1px solid var(--border);padding:24px 0}
+    .admin-sidebar-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:14px;color:var(--muted);cursor:pointer;transition:background .15s,color .15s;border-left:3px solid transparent}
+    .admin-sidebar-item:hover{background:rgba(255,255,255,.04);color:var(--text)}
+    .admin-sidebar-item.active{background:rgba(245,197,24,.08);color:var(--yellow);border-left-color:var(--yellow)}
+    .admin-sidebar-title{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:16px 20px 6px}
+    .admin-content{padding:32px}
+    .admin-header{margin-bottom:28px}
+    .admin-header h2{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px}
+    .admin-header p{color:var(--muted);font-size:14px;margin-top:4px}
+
+    /* Tables */
+    .data-table{width:100%;border-collapse:collapse}
+    .data-table th{text-align:left;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 12px;border-bottom:1px solid var(--border)}
+    .data-table td{padding:12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+    .data-table tr:last-child td{border-bottom:none}
+    .data-table tr:hover td{background:rgba(255,255,255,.02)}
+
+    /* Forms */
+    .form-group{margin-bottom:16px}
+    .form-group label{display:block;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+    .form-group input,.form-group select,.form-group textarea{width:100%;padding:11px 14px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;outline:none;transition:border-color .2s}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--yellow)}
+    .form-group select option{background:var(--surface)}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .form-actions{display:flex;gap:10px;margin-top:20px}
+
+    /* Buttons */
+    .btn{padding:9px 20px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;border:none;cursor:pointer;transition:opacity .2s,transform .15s;display:inline-flex;align-items:center;gap:6px}
+    .btn:hover{opacity:.85;transform:translateY(-1px)}
+    .btn-yellow{background:var(--yellow);color:#000}
+    .btn-danger{background:rgba(230,57,70,.15);color:var(--red);border:1px solid rgba(230,57,70,.3)}
+    .btn-ghost{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--border)}
+    .btn-sm{padding:5px 12px;font-size:12px}
+
+    /* Stats cards */
+    .stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+    .stat-card-value{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--yellow);line-height:1}
+    .stat-card-label{font-size:12px;color:var(--muted);margin-top:4px}
+
+    /* Modal */
+    .modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
     .modal-overlay.open{opacity:1;pointer-events:all}
-    .modal{
-      background:var(--surface);border:1px solid var(--border);
-      border-radius:20px;padding:40px 36px;width:100%;max-width:400px;
-      box-shadow:0 40px 100px rgba(0,0,0,.6);
-      transform:translateY(16px);transition:transform .3s cubic-bezier(.16,1,.3,1);
-    }
+    .modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:40px 36px;width:100%;max-width:420px;box-shadow:0 40px 100px rgba(0,0,0,.6);transform:translateY(16px);transition:transform .3s cubic-bezier(.16,1,.3,1)}
     .modal-overlay.open .modal{transform:translateY(0)}
-
-    .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
-    .modal-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px}
-    .modal-close{
-      width:32px;height:32px;border-radius:8px;
-      background:rgba(255,255,255,.06);border:none;
-      color:var(--muted);font-size:18px;cursor:pointer;
-      display:flex;align-items:center;justify-content:center;
-      transition:background .15s,color .15s;
-    }
+    .modal-lg{max-width:580px}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+    .modal-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px}
+    .modal-close{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,.06);border:none;color:var(--muted);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s}
     .modal-close:hover{background:rgba(255,255,255,.12);color:var(--text)}
-
-    .social-btn{
-      display:flex;align-items:center;justify-content:center;gap:10px;
-      width:100%;padding:12px 20px;border-radius:10px;
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.04);
-      color:var(--text);font-family:'Barlow',sans-serif;
-      font-size:14px;font-weight:500;cursor:pointer;
-      margin-bottom:10px;transition:background .15s,border-color .15s,transform .15s;
-    }
+    .social-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px 20px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-bottom:10px;transition:background .15s,border-color .15s,transform .15s}
     .social-btn:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);transform:translateY(-1px)}
-    .divider{display:flex;align-items:center;gap:10px;margin:20px 0;color:var(--muted);font-size:12px}
+    .divider{display:flex;align-items:center;gap:10px;margin:18px 0;color:var(--muted);font-size:12px}
     .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
-
-    .field{margin-bottom:12px}
-    .field label{display:block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-    .field input{
-      width:100%;padding:11px 14px;
-      background:rgba(255,255,255,.04);
-      border:1px solid var(--border);border-radius:8px;
-      color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;outline:none;
-      transition:border-color .2s,background .2s;
-    }
-    .field input:focus{border-color:var(--yellow);background:rgba(245,197,24,.05)}
-    .field input::placeholder{color:#444}
-
-    .submit-btn{
-      width:100%;padding:13px;border-radius:10px;
-      background:var(--yellow);color:#000;
-      font-family:'Barlow Condensed',sans-serif;
-      font-size:16px;font-weight:700;letter-spacing:.5px;
-      border:none;cursor:pointer;margin-top:8px;
-      transition:background .2s,transform .15s,box-shadow .2s;
-      box-shadow:0 4px 16px rgba(245,197,24,.25);
-    }
-    .submit-btn:hover{background:var(--yellow2);transform:translateY(-1px);box-shadow:0 6px 24px rgba(245,197,24,.35)}
+    .tabs{display:flex;background:rgba(255,255,255,.04);border-radius:8px;padding:3px;margin-bottom:20px}
+    .tab{flex:1;padding:7px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;text-align:center;border:none;background:transparent;color:var(--muted);transition:background .15s,color .15s}
+    .tab.active{background:var(--yellow);color:#000}
+    .submit-btn{width:100%;padding:13px;border-radius:10px;background:var(--yellow);color:#000;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;border:none;cursor:pointer;margin-top:8px;transition:background .2s,transform .15s;box-shadow:0 4px 16px rgba(245,197,24,.25)}
+    .submit-btn:hover{background:var(--yellow2);transform:translateY(-1px)}
     .submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
 
-    /* Tab switcher */
-    .tabs{display:flex;background:rgba(255,255,255,.04);border-radius:8px;padding:3px;margin-bottom:24px}
-    .tab{
-      flex:1;padding:7px;border-radius:6px;
-      font-size:13px;font-weight:600;cursor:pointer;text-align:center;
-      border:none;background:transparent;color:var(--muted);
-      transition:background .15s,color .15s;
-    }
-    .tab.active{background:var(--yellow);color:#000}
+    /* Profile */
+    .profile-header{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:36px;display:flex;align-items:center;gap:28px;margin-bottom:24px}
+    .profile-avatar-lg{width:90px;height:90px;border-radius:50%;background:#333;border:3px solid var(--yellow);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;overflow:hidden;flex-shrink:0}
+    .profile-avatar-lg img{width:100%;height:100%;object-fit:cover}
+    .profile-name{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;line-height:1}
+    .profile-email{color:var(--muted);font-size:14px;margin-top:4px}
+    .profile-meta{display:flex;gap:16px;margin-top:12px}
+
+    /* Over/Contact */
+    .about-hero{background:linear-gradient(135deg,rgba(245,197,24,.08),rgba(13,14,18,0));border:1px solid var(--border);border-radius:20px;padding:48px;margin-bottom:32px;text-align:center}
+    .about-hero h2{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:1px;margin-bottom:12px}
+    .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+    .team-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center}
+    .team-avatar{width:60px;height:60px;border-radius:50%;background:rgba(245,197,24,.15);border:2px solid rgba(245,197,24,.3);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 12px}
+    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    .contact-info{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px}
 
     /* Toast */
-    #toast{
-      position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
-      background:var(--surface);border:1px solid var(--border);
-      color:var(--text);padding:10px 20px;border-radius:100px;
-      font-size:13px;opacity:0;z-index:999;white-space:nowrap;
-      transition:transform .35s cubic-bezier(.16,1,.3,1),opacity .3s;
-    }
+    #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--surface);border:1px solid var(--border);color:var(--text);padding:10px 20px;border-radius:100px;font-size:13px;opacity:0;z-index:999;white-space:nowrap;transition:transform .35s cubic-bezier(.16,1,.3,1),opacity .3s;pointer-events:none}
     #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
     #toast.ok{border-color:rgba(245,197,24,.4);color:var(--yellow)}
     #toast.err{border-color:rgba(230,57,70,.4);color:var(--red)}
 
+    /* Access denied */
+    .access-denied{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;gap:16px}
+    .access-denied .icon{font-size:64px}
+    .access-denied h2{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:1px}
+    .access-denied p{color:var(--muted);max-width:360px}
+
+    /* Animations */
+    @keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+    @keyframes trainPulse{0%,100%{opacity:.3;transform:scaleX(.8)}50%{opacity:1;transform:scaleX(1)}}
     @keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 
-    @media(max-width:600px){
-      nav{padding:0 20px}
+    @media(max-width:768px){
+      nav{padding:0 16px}
       .nav-links{display:none}
-      .stats{gap:24px}
-      .stat-num{font-size:28px}
-      footer{flex-direction:column;gap:8px;text-align:center}
+      .admin-layout{grid-template-columns:1fr}
+      .admin-sidebar{display:none}
+      .contact-grid{grid-template-columns:1fr}
+      .form-row{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -359,89 +219,248 @@
 
 <!-- ══ NAVBAR ══ -->
 <nav>
-  <a href="#" class="nav-logo">
-    <div class="nav-logo-badge">ATR</div>
+  <div class="nav-logo" onclick="showPage('home')">
+    <img src="data:image/jpeg;base64,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" alt="ATR Logo"/>
     <div class="nav-logo-text">
       Antwerpen Transit
       <span>Roleplay Community</span>
     </div>
-  </a>
-
-  <div class="nav-links">
-    <a href="#">Home</a>
-    <a href="#">Over ATR</a>
-    <a href="#">Lijnen</a>
-    <a href="#">Community</a>
   </div>
-
+  <div class="nav-links">
+    <a onclick="showPage('home')" id="nav-home" class="active">Home</a>
+    <a onclick="showPage('lines')" id="nav-lines">Lijnen</a>
+    <a onclick="showPage('community')" id="nav-community">Community</a>
+    <a onclick="showPage('about')" id="nav-about">Over ATR</a>
+    <a onclick="showPage('contact')" id="nav-contact">Contact</a>
+    <span id="nav-admin-link" style="display:none"><a onclick="showPage('admin')" id="nav-admin">Admin</a></span>
+  </div>
   <div id="navAuthArea">
-    <!-- Shown when logged OUT -->
     <button class="btn-login" id="openLoginBtn" onclick="openModal()">Inloggen</button>
-
-    <!-- Shown when logged IN (hidden by default) -->
     <div class="user-pill" id="userPill" style="display:none" onclick="toggleDropdown()">
-      <div class="user-avatar" id="userAvatar">?</div>
+      <div class="user-avatar" id="userAvatar"></div>
       <div>
         <div class="user-name" id="userName">Gebruiker</div>
-        <div class="user-provider" id="userProvider">google</div>
+        <div id="userRoleBadge" class="user-role-badge role-user">Lid</div>
       </div>
     </div>
   </div>
 </nav>
 
-<!-- User dropdown -->
 <div class="user-dropdown" id="userDropdown">
-  <a href="#" class="dropdown-item">👤 Profiel</a>
-  <a href="#" class="dropdown-item">⚙️ Instellingen</a>
+  <div class="dropdown-item" onclick="showPage('profile');toggleDropdown()">👤 Mijn Profiel</div>
+  <div id="adminDropItem" style="display:none" class="dropdown-item" onclick="showPage('admin');toggleDropdown()">⚙️ Admin Panel</div>
   <div class="dropdown-divider"></div>
   <div class="dropdown-item danger" onclick="logout()">🚪 Uitloggen</div>
 </div>
 
-<!-- ══ HERO ══ -->
-<section class="hero">
-  <div class="hero-eyebrow">Live roleplay platform</div>
-  <h1>ANTWERPEN<span class="accent">TRANSIT</span>ROLEPLAY</h1>
-  <p class="hero-sub">Stap aan boord van het meest realistische tramroleplay platform van België. Rijden, besturen, beleven.</p>
-  <div class="hero-ctas">
-    <button class="cta-primary" onclick="openModal()">Nu beginnen</button>
-    <button class="cta-secondary">Meer info</button>
-  </div>
-  <div class="stats">
-    <div class="stat"><div class="stat-num">1.200+</div><div class="stat-label">Spelers</div></div>
-    <div class="stat"><div class="stat-num">14</div><div class="stat-label">Lijnen</div></div>
-    <div class="stat"><div class="stat-num">24/7</div><div class="stat-label">Online</div></div>
-  </div>
-  <div class="metro-line"></div>
-</section>
+<!-- ══════════════════ PAGES ══════════════════ -->
 
-<!-- ══ FEATURES ══ -->
-<div class="section">
-  <div class="section-label">Waarom ATR?</div>
-  <div class="section-title">Alles wat je nodig hebt</div>
-  <div class="cards">
-    <div class="card">
-      <div class="card-icon">🚋</div>
-      <h3>Realistische Lijnen</h3>
-      <p>Rijd de exacte Antwerpse tramlijnen na, inclusief haltes, dienstregeling en storingen.</p>
+<!-- HOME -->
+<div class="page active" id="page-home">
+  <section class="hero">
+    <div class="hero-eyebrow">Live roleplay platform</div>
+    <h1 class="hero-title">ANTWERPEN<span class="accent">TRANSIT</span>ROLEPLAY</h1>
+    <p class="hero-sub">Stap aan boord van het meest realistische tramroleplay platform van België. Rijden, besturen, beleven.</p>
+    <div class="hero-ctas">
+      <button class="cta-primary" onclick="showPage('lines')">Bekijk Lijnen</button>
+      <button class="cta-secondary" onclick="showPage('about')">Over ATR</button>
     </div>
-    <div class="card">
-      <div class="card-icon">👥</div>
-      <h3>Actieve Community</h3>
-      <p>Meer dan 1200 spelers, Discord server, evenementen en wekelijkse dienstenroosters.</p>
+    <div class="stats">
+      <div class="stat"><div class="stat-num" id="statUsers">—</div><div class="stat-label">Spelers</div></div>
+      <div class="stat"><div class="stat-num" id="statLines">—</div><div class="stat-label">Lijnen</div></div>
+      <div class="stat"><div class="stat-num">24/7</div><div class="stat-label">Online</div></div>
     </div>
-    <div class="card">
-      <div class="card-icon">🏆</div>
-      <h3>Rang Systeem</h3>
-      <p>Start als stagiair en werk je op tot hoofdconducteur of lijnmanager.</p>
+    <div class="metro-line"></div>
+  </section>
+  <div class="section">
+    <div class="section-label">Waarom ATR?</div>
+    <div class="section-title">Alles wat je nodig hebt</div>
+    <div class="cards">
+      <div class="card"><div class="card-icon">🚋</div><h3>Realistische Lijnen</h3><p>Rijd de exacte Antwerpse tramlijnen na, inclusief haltes, dienstregeling en storingen.</p></div>
+      <div class="card"><div class="card-icon">👥</div><h3>Actieve Community</h3><p>Meer dan duizend spelers, evenementen en wekelijkse dienstenroosters.</p></div>
+      <div class="card"><div class="card-icon">🏆</div><h3>Rang Systeem</h3><p>Start als stagiair en werk je op tot hoofdconducteur of lijnmanager.</p></div>
     </div>
   </div>
 </div>
 
-<!-- ══ FOOTER ══ -->
-<footer>
-  <span>© 2025 ATR – Antwerpen Transit Roleplay</span>
-  <span style="color:#444">Geen officiële band met De Lijn</span>
-</footer>
+<!-- LINES -->
+<div class="page" id="page-lines">
+  <div class="section">
+    <div class="section-label">Dienstregeling</div>
+    <div class="section-title">Tramlijnen</div>
+    <p class="section-sub">Alle actieve en geplande lijnen binnen ATR. Klik op een lijn voor meer info en reacties.</p>
+    <div id="linesGrid" class="lines-grid">
+      <div class="empty-state"><div class="icon">🚋</div><p>Lijnen worden geladen...</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- LINE DETAIL -->
+<div class="page" id="page-line-detail">
+  <div class="section">
+    <button class="btn btn-ghost" style="margin-bottom:20px" onclick="showPage('lines')">← Terug</button>
+    <div id="lineDetailContent"></div>
+    <div style="margin-top:32px">
+      <div class="section-label">Reacties</div>
+      <div id="commentInputArea" class="comment-input-area" style="display:none">
+        <textarea id="commentText" placeholder="Schrijf een reactie..."></textarea>
+        <div style="margin-top:8px"><button class="btn btn-yellow btn-sm" onclick="postComment()">Plaatsen</button></div>
+      </div>
+      <div id="loginToComment" style="display:none;margin-bottom:16px;color:var(--muted);font-size:14px">Log in om een reactie te plaatsen.</div>
+      <div id="commentsContainer"></div>
+    </div>
+  </div>
+</div>
+
+<!-- COMMUNITY -->
+<div class="page" id="page-community">
+  <div class="section">
+    <div class="section-label">Community</div>
+    <div class="section-title">ATR Community</div>
+    <p class="section-sub">Ontmoet andere spelers, deel ervaringen en blijf op de hoogte van nieuws.</p>
+    <div class="cards">
+      <div class="card"><div class="card-icon">💬</div><h3>Discord Server</h3><p>Praat mee op onze Discord server met meer dan duizend leden.</p><button class="btn btn-ghost" style="margin-top:16px">Naar Discord</button></div>
+      <div class="card"><div class="card-icon">📅</div><h3>Evenementen</h3><p>Wekelijkse rijsessies, toernooien en speciale evenementen voor alle leden.</p></div>
+      <div class="card"><div class="card-icon">🎖️</div><h3>Ranglijst</h3><p>Bekijk de topspelers en verdien jouw plek op de ranglijst.</p></div>
+    </div>
+    <div style="margin-top:40px">
+      <div class="section-label">Leden</div>
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;margin-bottom:20px">Geverifieerde leden</h2>
+      <div id="membersList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<div class="page" id="page-about">
+  <div class="section">
+    <div class="about-hero">
+      <img src="data:image/jpeg;base64,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" alt="ATR" style="width:80px;height:80px;border-radius:16px;margin-bottom:20px"/>
+      <h2>Antwerpen Transit Roleplay</h2>
+      <p style="color:var(--muted);max-width:600px;margin:0 auto;line-height:1.7">ATR is de grootste Belgische tramroleplay community. We simuleren het volledige netwerk van De Lijn in Antwerpen, met aandacht voor detail, realisme en plezier.</p>
+    </div>
+    <div class="cards" style="margin-top:32px">
+      <div class="card"><div class="card-icon">📅</div><h3>Opgericht 2022</h3><p>Gestart als klein project, uitgegroeid tot een actieve community met honderden leden.</p></div>
+      <div class="card"><div class="card-icon">🎯</div><h3>Onze Missie</h3><p>Een realistische en leuke roleplaying omgeving bieden voor iedereen die houdt van openbaar vervoer.</p></div>
+      <div class="card"><div class="card-icon">🤝</div><h3>Samenwerking</h3><p>We werken samen met andere roleplay communities en organiseren gezamenlijke evenementen.</p></div>
+    </div>
+    <div style="margin-top:40px">
+      <div class="section-label">Het Team</div>
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:1px;margin-bottom:20px">Onze Staf</h2>
+      <div class="team-grid" id="staffGrid">
+        <div class="team-card"><div class="team-avatar">👑</div><div style="font-weight:700">Oprichter</div><div style="font-size:12px;color:var(--muted);margin-top:4px">Beheerder</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<div class="page" id="page-contact">
+  <div class="section">
+    <div class="section-label">Contact</div>
+    <div class="section-title">Neem Contact Op</div>
+    <p class="section-sub">Heb je vragen, suggesties of wil je samenwerken? We horen het graag!</p>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <h3 style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;margin-bottom:20px">Stuur een bericht</h3>
+        <div class="form-group"><label>Naam</label><input type="text" id="contactName" placeholder="Jouw naam"/></div>
+        <div class="form-group"><label>E-mail</label><input type="email" id="contactEmail" placeholder="jij@voorbeeld.be"/></div>
+        <div class="form-group"><label>Bericht</label><textarea id="contactMsg" style="width:100%;min-height:120px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;outline:none;resize:vertical;transition:border-color .2s" placeholder="Jouw bericht..."></textarea></div>
+        <button class="btn btn-yellow" onclick="sendContact()">Versturen</button>
+      </div>
+      <div>
+        <div class="contact-info" style="margin-bottom:16px">
+          <h3 style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;margin-bottom:12px">📬 Direct contact</h3>
+          <p style="color:var(--muted);font-size:14px;line-height:1.7">Voor snelle vragen kan je ons bereiken via ons Discord kanaal. We reageren normaal binnen 24 uur.</p>
+        </div>
+        <div class="contact-info">
+          <h3 style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;margin-bottom:12px">🕐 Reactietijd</h3>
+          <p style="color:var(--muted);font-size:14px;line-height:1.7">We proberen alle berichten binnen 1-2 werkdagen te beantwoorden.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="page" id="page-profile">
+  <div class="section">
+    <div class="profile-header" id="profileHeader">
+      <div class="profile-avatar-lg" id="profileAvatarLg"></div>
+      <div>
+        <div class="profile-name" id="profileName">—</div>
+        <div class="profile-email" id="profileEmail">—</div>
+        <div class="profile-meta">
+          <span id="profileRoleBadge" class="user-role-badge role-user">Lid</span>
+          <span style="font-size:12px;color:var(--muted)" id="profileJoined"></span>
+        </div>
+      </div>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-icon">💬</div><h3>Reacties</h3><p id="profileCommentCount">0 reacties geplaatst.</p></div>
+      <div class="card"><div class="card-icon">✅</div><h3>Status</h3><p id="profileVerified">Account actief.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="page" id="page-admin">
+  <div id="adminAccessDenied" class="access-denied" style="display:none">
+    <div class="icon">🔒</div>
+    <h2>GEEN TOEGANG</h2>
+    <p>Je hebt geen rechten om het admin panel te bekijken.</p>
+    <button class="btn btn-ghost" onclick="showPage('home')">Terug naar home</button>
+  </div>
+  <div id="adminPanel" class="admin-layout" style="display:none">
+    <div class="admin-sidebar">
+      <div class="admin-sidebar-title">Beheer</div>
+      <div class="admin-sidebar-item active" onclick="switchAdminTab('overview')" id="tab-overview">📊 Overzicht</div>
+      <div class="admin-sidebar-item" onclick="switchAdminTab('lines')" id="tab-lines">🚋 Lijnen</div>
+      <div class="admin-sidebar-item" onclick="switchAdminTab('users')" id="tab-users">👥 Gebruikers</div>
+      <div class="admin-sidebar-item" onclick="switchAdminTab('contacts')" id="tab-contacts">📬 Berichten</div>
+    </div>
+    <div class="admin-content">
+      <!-- Overview -->
+      <div id="adminTab-overview">
+        <div class="admin-header"><h2>Dashboard</h2><p>Welkom in het ATR admin panel</p></div>
+        <div class="stat-cards">
+          <div class="stat-card"><div class="stat-card-value" id="aStatUsers">—</div><div class="stat-card-label">Geregistreerde gebruikers</div></div>
+          <div class="stat-card"><div class="stat-card-value" id="aStatLines">—</div><div class="stat-card-label">Actieve lijnen</div></div>
+          <div class="stat-card"><div class="stat-card-value" id="aStatComments">—</div><div class="stat-card-label">Reacties</div></div>
+          <div class="stat-card"><div class="stat-card-value" id="aStatContacts">—</div><div class="stat-card-label">Contactberichten</div></div>
+        </div>
+      </div>
+      <!-- Lines management -->
+      <div id="adminTab-lines" style="display:none">
+        <div class="admin-header" style="display:flex;align-items:flex-start;justify-content:space-between">
+          <div><h2>Lijnen Beheer</h2><p>Voeg lijnen toe, bewerk of verwijder ze</p></div>
+          <button class="btn btn-yellow" onclick="openLineModal()">+ Nieuwe lijn</button>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+          <table class="data-table">
+            <thead><tr><th>Lijn</th><th>Naam</th><th>Route</th><th>Status</th><th>Acties</th></tr></thead>
+            <tbody id="adminLinesTable"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">Laden...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <!-- Users management -->
+      <div id="adminTab-users" style="display:none">
+        <div class="admin-header"><h2>Gebruikersbeheer</h2><p>Beheer rollen en verificatie</p></div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+          <table class="data-table">
+            <thead><tr><th>Gebruiker</th><th>E-mail</th><th>Rol</th><th>Aangemeld</th><th>Acties</th></tr></thead>
+            <tbody id="adminUsersTable"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">Laden...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <!-- Contacts -->
+      <div id="adminTab-contacts" style="display:none">
+        <div class="admin-header"><h2>Contactberichten</h2><p>Inkomende berichten van bezoekers</p></div>
+        <div id="adminContactsList"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ══ LOGIN MODAL ══ -->
 <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
@@ -450,42 +469,44 @@
       <div class="modal-title">INLOGGEN</div>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
-
-    <!-- Tab switcher -->
     <div class="tabs">
       <button class="tab active" id="tabLogin" onclick="switchTab('login')">Inloggen</button>
       <button class="tab" id="tabRegister" onclick="switchTab('register')">Registreren</button>
     </div>
-
-    <!-- Social -->
     <button class="social-btn" id="googleBtn">
-      <svg width="18" height="18" viewBox="0 0 24 24">
-        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-      </svg>
+      <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
       Doorgaan met Google
     </button>
-
-
-
     <div class="divider">of met e-mail</div>
-
-    <div class="field">
-      <label>E-mailadres</label>
-      <input type="email" id="emailInput" placeholder="jij@voorbeeld.be"/>
-    </div>
-    <div class="field">
-      <label>Wachtwoord</label>
-      <input type="password" id="passwordInput" placeholder="••••••••"/>
-    </div>
-    <div class="field" id="confirmField" style="display:none">
-      <label>Wachtwoord herhalen</label>
-      <input type="password" id="confirmInput" placeholder="••••••••"/>
-    </div>
-
+    <div class="form-group"><label>E-mailadres</label><input type="email" id="emailInput" placeholder="jij@voorbeeld.be"/></div>
+    <div class="form-group"><label>Wachtwoord</label><input type="password" id="passwordInput" placeholder="••••••••"/></div>
+    <div class="form-group" id="confirmField" style="display:none"><label>Wachtwoord herhalen</label><input type="password" id="confirmInput" placeholder="••••••••"/></div>
     <button class="submit-btn" id="submitBtn">Inloggen</button>
+  </div>
+</div>
+
+<!-- LINE MODAL -->
+<div class="modal-overlay" id="lineModalOverlay" onclick="handleLineOverlayClick(event)">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div class="modal-title" id="lineModalTitle">NIEUWE LIJN</div>
+      <button class="modal-close" onclick="closeLineModal()">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Lijnnummer</label><input type="text" id="lineNumber" placeholder="bv. 3"/></div>
+      <div class="form-group"><label>Kleur</label><input type="color" id="lineColor" value="#f5c518" style="height:43px;padding:4px"/></div>
+    </div>
+    <div class="form-group"><label>Naam</label><input type="text" id="lineName" placeholder="bv. Lijn 3 – Centrum"/></div>
+    <div class="form-group"><label>Route (begin → einde)</label><input type="text" id="lineRoute" placeholder="bv. Centraal Station → Linkeroever"/></div>
+    <div class="form-group"><label>Haltes (komma gescheiden)</label><input type="text" id="lineStops" placeholder="bv. CS, Opera, Meir, Groenplaats"/></div>
+    <div class="form-group"><label>Beschrijving</label><textarea id="lineDesc" style="min-height:80px"></textarea></div>
+    <div class="form-group"><label>Status</label>
+      <select id="lineStatus"><option value="active">Actief</option><option value="maintenance">Onderhoud</option><option value="inactive">Inactief</option></select>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-yellow" onclick="saveLine()">Opslaan</button>
+      <button class="btn btn-ghost" onclick="closeLineModal()">Annuleren</button>
+    </div>
   </div>
 </div>
 
@@ -493,11 +514,13 @@
 
 <!-- ══ FIREBASE ══ -->
 <script type="module">
-  import { initializeApp }          from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, signInWithPopup, signInWithEmailAndPassword,
            createUserWithEmailAndPassword, GoogleAuthProvider,
            onAuthStateChanged, signOut }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getDatabase, ref, set, get, push, onValue, update, remove, serverTimestamp, query, orderByChild }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey:            "AIzaSyCzkV5Brn8mSM_Co_eCNHjPK7upjWjDqDA",
@@ -512,63 +535,91 @@
 
   const app  = initializeApp(firebaseConfig);
   const auth = getAuth(app);
+  const db   = getDatabase(app);
 
-  // ── Helpers ──────────────────────────────────────────────
-  function toast(msg, type="ok") {
+  // ── Globals ────────────────────────────────────────────────
+  let currentUser  = null;
+  let currentRole  = "user";
+  let currentLineId = null;
+  let editingLineId = null;
+  window._atrTab = "login";
+
+  // ── Toast ──────────────────────────────────────────────────
+  window.toast = function(msg, type="ok") {
     const t = document.getElementById("toast");
     t.textContent = msg; t.className = `show ${type}`;
     setTimeout(() => t.className = "", 3500);
-  }
+  };
 
-  function setUser(user) {
+  // ── Auth state ─────────────────────────────────────────────
+  onAuthStateChanged(auth, async user => {
+    currentUser = user;
+    if (user) {
+      // Save/update user in DB
+      await set(ref(db, `users/${user.uid}`), {
+        displayName: user.displayName || user.email.split("@")[0],
+        email:       user.email,
+        photoURL:    user.photoURL || "",
+        lastLogin:   serverTimestamp(),
+        uid:         user.uid,
+        // Only set role if it doesn't exist yet
+      }, { merge: true }).catch(() => {});
+
+      // Actually use update to not overwrite role
+      const userRef = ref(db, `users/${user.uid}`);
+      const snap = await get(userRef);
+      if (!snap.exists()) {
+        await set(userRef, { displayName: user.displayName || user.email.split("@")[0], email: user.email, photoURL: user.photoURL||"", uid: user.uid, role:"user", createdAt: serverTimestamp() });
+      } else {
+        await update(userRef, { displayName: user.displayName||user.email.split("@")[0], email:user.email, photoURL:user.photoURL||"", lastLogin: serverTimestamp() });
+      }
+
+      const roleSnap = await get(ref(db, `users/${user.uid}/role`));
+      currentRole = roleSnap.val() || "user";
+
+      renderUserNav(user, currentRole);
+      closeModal();
+    } else {
+      currentUser = null; currentRole = "user";
+      document.getElementById("openLoginBtn").style.display = "";
+      document.getElementById("userPill").style.display = "none";
+      document.getElementById("nav-admin-link").style.display = "none";
+      document.getElementById("adminDropItem").style.display = "none";
+    }
+    loadLines();
+    loadStats();
+  });
+
+  function renderUserNav(user, role) {
     document.getElementById("openLoginBtn").style.display = "none";
     document.getElementById("userPill").style.display = "flex";
-
     const av = document.getElementById("userAvatar");
-    // Toon profielfoto als die beschikbaar is
-    if (user.photoURL) {
-      av.innerHTML = `<img src="${user.photoURL}" alt="avatar"/>`;
-    } else {
-      // Initialen als fallback
-      av.textContent = (user.displayName || user.email || "?")[0].toUpperCase();
-    }
-
+    av.innerHTML = user.photoURL ? `<img src="${user.photoURL}"/>` : (user.displayName||user.email||"?")[0].toUpperCase();
     document.getElementById("userName").textContent = user.displayName || user.email.split("@")[0];
-
-    // Provider label
-    const providerMap = { "google.com": "Google", "discord": "Discord", "password": "E-mail" };
-    const pid = user.providerData[0]?.providerId || "password";
-    document.getElementById("userProvider").textContent = providerMap[pid] || pid;
+    const badge = document.getElementById("userRoleBadge");
+    const labels = { admin:"Admin", moderator:"Moderator", user:"Lid" };
+    const classes = { admin:"role-admin", moderator:"role-moderator", user:"role-user" };
+    badge.textContent = labels[role]||"Lid";
+    badge.className = `user-role-badge ${classes[role]||"role-user"}`;
+    const isStaff = role === "admin" || role === "moderator";
+    document.getElementById("nav-admin-link").style.display = isStaff ? "" : "none";
+    document.getElementById("adminDropItem").style.display = isStaff ? "" : "none";
+    loadProfilePage(user, role);
   }
 
-  function clearUser() {
-    document.getElementById("openLoginBtn").style.display = "";
-    document.getElementById("userPill").style.display = "none";
-  }
-
-  // ── Auth state listener ───────────────────────────────────
-  onAuthStateChanged(auth, user => {
-    if (user) { setUser(user); closeModal(); }
-    else clearUser();
-  });
-
-  // ── Google ────────────────────────────────────────────────
+  // ── Google login ───────────────────────────────────────────
   document.getElementById("googleBtn").addEventListener("click", async () => {
-    try {
-      await signInWithPopup(auth, new GoogleAuthProvider());
-      toast("Ingelogd met Google ✓");
-    } catch(e) { toast("Google login mislukt: " + e.message, "err"); }
+    try { await signInWithPopup(auth, new GoogleAuthProvider()); toast("Welkom! ✓"); }
+    catch(e) { toast("Google login mislukt: " + e.message, "err"); }
   });
 
-// ── E-mail ────────────────────────────────────────────────
+  // ── Email login / register ─────────────────────────────────
   document.getElementById("submitBtn").addEventListener("click", async () => {
     const email = document.getElementById("emailInput").value.trim();
     const pass  = document.getElementById("passwordInput").value;
     const btn   = document.getElementById("submitBtn");
     const isReg = window._atrTab === "register";
-
     if (!email || !pass) { toast("Vul alle velden in.", "err"); return; }
-
     btn.disabled = true; btn.textContent = "Bezig...";
     try {
       if (isReg) {
@@ -581,45 +632,349 @@
         toast("Welkom terug ✓");
       }
     } catch(e) {
-      const m = { "auth/user-not-found":"Geen account gevonden.","auth/wrong-password":"Onjuist wachtwoord.",
-                  "auth/email-already-in-use":"E-mail al in gebruik.","auth/weak-password":"Wachtwoord te zwak." };
-      toast(m[e.code] || e.message, "err");
-    } finally { btn.disabled = false; btn.textContent = isReg ? "Registreren" : "Inloggen"; }
+      const m = {"auth/user-not-found":"Geen account gevonden.","auth/wrong-password":"Onjuist wachtwoord.",
+                 "auth/email-already-in-use":"E-mail al in gebruik.","auth/weak-password":"Wachtwoord te zwak (min. 6 tekens)."};
+      toast(m[e.code]||e.message, "err");
+    } finally { btn.disabled=false; btn.textContent=isReg?"Registreren":"Inloggen"; }
   });
 
-  // ── Logout ────────────────────────────────────────────────
+  // ── Logout ─────────────────────────────────────────────────
   window.logout = async () => {
     await signOut(auth);
     document.getElementById("userDropdown").classList.remove("open");
     toast("Tot ziens!");
   };
-</script>
 
-<script>
+  // ── Load stats ─────────────────────────────────────────────
+  async function loadStats() {
+    const [usersSnap, linesSnap, commSnap] = await Promise.all([
+      get(ref(db, "users")), get(ref(db, "lines")), get(ref(db, "comments"))
+    ]);
+    const uc = usersSnap.exists() ? Object.keys(usersSnap.val()).length : 0;
+    const lc = linesSnap.exists() ? Object.keys(linesSnap.val()).length : 0;
+    document.getElementById("statUsers").textContent = uc;
+    document.getElementById("statLines").textContent = lc;
+    if (document.getElementById("aStatUsers")) {
+      document.getElementById("aStatUsers").textContent = uc;
+      document.getElementById("aStatLines").textContent = lc;
+      const cc = commSnap.exists() ? Object.values(commSnap.val()).reduce((a,v)=>a+Object.keys(v).length,0) : 0;
+      document.getElementById("aStatComments").textContent = cc;
+      const ctSnap = await get(ref(db, "contacts"));
+      document.getElementById("aStatContacts").textContent = ctSnap.exists() ? Object.keys(ctSnap.val()).length : 0;
+    }
+    loadMembers(usersSnap);
+  }
+
+  // ── Members list ───────────────────────────────────────────
+  function loadMembers(snap) {
+    const el = document.getElementById("membersList");
+    if (!snap || !snap.exists()) { el.innerHTML = `<p style="color:var(--muted)">Geen leden gevonden.</p>`; return; }
+    const users = snap.val();
+    const verified = Object.values(users).filter(u => u.role === "moderator" || u.role === "admin");
+    if (!verified.length) { el.innerHTML = `<p style="color:var(--muted)">Nog geen geverifieerde leden.</p>`; return; }
+    el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">${
+      verified.map(u => `<div class="team-card">
+        <div class="team-avatar">${u.photoURL?`<img src="${u.photoURL}" style="width:100%;height:100%;border-radius:50%;object-fit:cover"/>`:"👤"}</div>
+        <div style="font-weight:700;font-size:14px">${u.displayName||"—"}</div>
+        <div style="margin-top:6px"><span class="user-role-badge ${u.role==="admin"?"role-admin":"role-moderator"}">${u.role==="admin"?"Admin":"Moderator"}</span></div>
+      </div>`).join("")
+    }</div>`;
+  }
+
+  // ── Lines ──────────────────────────────────────────────────
+  function loadLines() {
+    onValue(ref(db, "lines"), snap => {
+      const grid = document.getElementById("linesGrid");
+      const adminTable = document.getElementById("adminLinesTable");
+      if (!snap.exists()) {
+        grid.innerHTML = `<div class="empty-state"><div class="icon">🚋</div><p>Nog geen lijnen toegevoegd.</p></div>`;
+        if (adminTable) adminTable.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px">Geen lijnen.</td></tr>`;
+        return;
+      }
+      const lines = snap.val();
+      grid.innerHTML = Object.entries(lines).map(([id, l]) => `
+        <div class="line-card" onclick="showLineDetail('${id}')">
+          <div class="line-number" style="background:${l.color||"#f5c518"}">${l.number||"?"}</div>
+          <div class="line-name">${l.name||"Naamloos"}</div>
+          <div class="line-route">📍 ${l.route||"—"}</div>
+          <div class="line-stops">🛑 ${(l.stops||"").split(",").length} haltes</div>
+          <span class="line-status ${l.status==="active"?"status-active":l.status==="maintenance"?"status-maintenance":"status-inactive"}">
+            ${l.status==="active"?"● Actief":l.status==="maintenance"?"● Onderhoud":"● Inactief"}
+          </span>
+        </div>`).join("");
+      if (adminTable) {
+        adminTable.innerHTML = Object.entries(lines).map(([id, l]) => `
+          <tr>
+            <td><span style="background:${l.color||"#f5c518"};color:#000;padding:2px 8px;border-radius:4px;font-weight:700">${l.number||"?"}</span></td>
+            <td>${l.name||"—"}</td>
+            <td style="color:var(--muted);font-size:12px">${l.route||"—"}</td>
+            <td><span class="line-status ${l.status==="active"?"status-active":l.status==="maintenance"?"status-maintenance":"status-inactive"}" style="font-size:11px">${l.status}</span></td>
+            <td style="display:flex;gap:6px">
+              <button class="btn btn-ghost btn-sm" onclick="editLine('${id}')">✏️</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteLine('${id}')">🗑️</button>
+            </td>
+          </tr>`).join("");
+      }
+      // Update stat
+      document.getElementById("statLines").textContent = Object.keys(lines).length;
+    });
+  }
+
+  // ── Line detail ────────────────────────────────────────────
+  window.showLineDetail = async function(lineId) {
+    currentLineId = lineId;
+    const snap = await get(ref(db, `lines/${lineId}`));
+    if (!snap.exists()) return;
+    const l = snap.val();
+    document.getElementById("lineDetailContent").innerHTML = `
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px">
+        <div class="line-number" style="background:${l.color||"#f5c518"};width:56px;height:56px;font-size:28px">${l.number||"?"}</div>
+        <div><h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px">${l.name||"Naamloos"}</h2>
+          <span class="line-status ${l.status==="active"?"status-active":l.status==="maintenance"?"status-maintenance":"status-inactive"}">${l.status==="active"?"● Actief":l.status==="maintenance"?"● Onderhoud":"● Inactief"}</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+        <div class="card"><strong>📍 Route</strong><p style="margin-top:6px;color:var(--muted)">${l.route||"—"}</p></div>
+        <div class="card"><strong>🛑 Haltes</strong><p style="margin-top:6px;color:var(--muted);font-size:13px">${(l.stops||"Geen haltes").split(",").map(s=>`<span style="background:rgba(245,197,24,.1);padding:2px 8px;border-radius:4px;margin:2px;display:inline-block">${s.trim()}</span>`).join("")}</p></div>
+      </div>
+      ${l.desc ? `<div class="card" style="margin-bottom:16px"><p style="color:var(--muted)">${l.desc}</p></div>` : ""}`;
+    if (currentUser) {
+      document.getElementById("commentInputArea").style.display = "";
+      document.getElementById("loginToComment").style.display = "none";
+    } else {
+      document.getElementById("commentInputArea").style.display = "none";
+      document.getElementById("loginToComment").style.display = "";
+    }
+    loadComments(lineId);
+    showPage("line-detail");
+  };
+
+  // ── Comments ───────────────────────────────────────────────
+  function loadComments(lineId) {
+    onValue(ref(db, `comments/${lineId}`), snap => {
+      const el = document.getElementById("commentsContainer");
+      if (!snap.exists()) { el.innerHTML = `<p style="color:var(--muted);font-size:14px">Nog geen reacties. Wees de eerste!</p>`; return; }
+      const comments = snap.val();
+      el.innerHTML = Object.entries(comments).reverse().map(([id, c]) => `
+        <div class="comment-box">
+          <div class="comment-header">
+            <div class="comment-avatar">${c.photoURL?`<img src="${c.photoURL}"/>`:(c.author||"?")[0].toUpperCase()}</div>
+            <div class="comment-author">${c.author||"Anoniem"}</div>
+            ${(currentRole==="admin"||currentRole==="moderator")?`<button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="deleteComment('${lineId}','${id}')">🗑️</button>`:`<div class="comment-date">${c.date||""}</div>`}
+          </div>
+          <div class="comment-text">${c.text||""}</div>
+        </div>`).join("");
+    });
+  }
+
+  window.postComment = async function() {
+    if (!currentUser) { toast("Log eerst in.", "err"); return; }
+    const text = document.getElementById("commentText").value.trim();
+    if (!text) { toast("Schrijf eerst een reactie.", "err"); return; }
+    await push(ref(db, `comments/${currentLineId}`), {
+      author:   currentUser.displayName || currentUser.email.split("@")[0],
+      photoURL: currentUser.photoURL || "",
+      uid:      currentUser.uid,
+      text,
+      date: new Date().toLocaleDateString("nl-BE")
+    });
+    document.getElementById("commentText").value = "";
+    toast("Reactie geplaatst ✓");
+  };
+
+  window.deleteComment = async function(lineId, commentId) {
+    if (currentRole !== "admin" && currentRole !== "moderator") return;
+    await remove(ref(db, `comments/${lineId}/${commentId}`));
+    toast("Reactie verwijderd.");
+  };
+
+  // ── Profile ────────────────────────────────────────────────
+  function loadProfilePage(user, role) {
+    const av = document.getElementById("profileAvatarLg");
+    av.innerHTML = user.photoURL ? `<img src="${user.photoURL}"/>` : (user.displayName||user.email||"?")[0].toUpperCase();
+    document.getElementById("profileName").textContent = user.displayName || user.email.split("@")[0];
+    document.getElementById("profileEmail").textContent = user.email;
+    const badge = document.getElementById("profileRoleBadge");
+    const labels = {admin:"Admin",moderator:"Moderator",user:"Lid"};
+    const classes = {admin:"role-admin",moderator:"role-moderator",user:"role-user"};
+    badge.textContent = labels[role]||"Lid"; badge.className=`user-role-badge ${classes[role]||"role-user"}`;
+    document.getElementById("profileJoined").textContent = "Lid van ATR";
+  }
+
+  // ── Admin: lines CRUD ──────────────────────────────────────
+  window.openLineModal = function(id) {
+    editingLineId = id || null;
+    document.getElementById("lineModalTitle").textContent = id ? "LIJN BEWERKEN" : "NIEUWE LIJN";
+    if (!id) {
+      ["lineNumber","lineName","lineRoute","lineStops","lineDesc"].forEach(f => document.getElementById(f).value="");
+      document.getElementById("lineColor").value="#f5c518";
+      document.getElementById("lineStatus").value="active";
+    }
+    document.getElementById("lineModalOverlay").classList.add("open");
+  };
+  window.closeLineModal = () => document.getElementById("lineModalOverlay").classList.remove("open");
+  window.handleLineOverlayClick = e => { if (e.target===document.getElementById("lineModalOverlay")) closeLineModal(); };
+
+  window.editLine = async function(id) {
+    const snap = await get(ref(db, `lines/${id}`));
+    if (!snap.exists()) return;
+    const l = snap.val();
+    document.getElementById("lineNumber").value = l.number||"";
+    document.getElementById("lineName").value   = l.name||"";
+    document.getElementById("lineRoute").value  = l.route||"";
+    document.getElementById("lineStops").value  = l.stops||"";
+    document.getElementById("lineDesc").value   = l.desc||"";
+    document.getElementById("lineColor").value  = l.color||"#f5c518";
+    document.getElementById("lineStatus").value = l.status||"active";
+    openLineModal(id);
+  };
+
+  window.saveLine = async function() {
+    if (currentRole !== "admin" && currentRole !== "moderator") { toast("Geen rechten.", "err"); return; }
+    const data = {
+      number: document.getElementById("lineNumber").value.trim(),
+      name:   document.getElementById("lineName").value.trim(),
+      route:  document.getElementById("lineRoute").value.trim(),
+      stops:  document.getElementById("lineStops").value.trim(),
+      desc:   document.getElementById("lineDesc").value.trim(),
+      color:  document.getElementById("lineColor").value,
+      status: document.getElementById("lineStatus").value,
+      updatedAt: serverTimestamp()
+    };
+    if (!data.number || !data.name) { toast("Vul minstens lijnnummer en naam in.", "err"); return; }
+    if (editingLineId) {
+      await update(ref(db, `lines/${editingLineId}`), data);
+      toast("Lijn bijgewerkt ✓");
+    } else {
+      await push(ref(db, "lines"), { ...data, createdAt: serverTimestamp() });
+      toast("Lijn toegevoegd ✓");
+    }
+    closeLineModal();
+  };
+
+  window.deleteLine = async function(id) {
+    if (currentRole !== "admin") { toast("Alleen admins kunnen lijnen verwijderen.", "err"); return; }
+    if (!confirm("Lijn en alle reacties verwijderen?")) return;
+    await remove(ref(db, `lines/${id}`));
+    await remove(ref(db, `comments/${id}`));
+    toast("Lijn verwijderd.");
+  };
+
+  // ── Admin: users ───────────────────────────────────────────
+  window.loadAdminUsers = async function() {
+    const snap = await get(ref(db, "users"));
+    const tbody = document.getElementById("adminUsersTable");
+    if (!snap.exists()) { tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--muted)">Geen gebruikers.</td></tr>`; return; }
+    const users = snap.val();
+    tbody.innerHTML = Object.entries(users).map(([uid, u]) => `
+      <tr>
+        <td style="display:flex;align-items:center;gap:8px">
+          <div class="user-avatar" style="width:28px;height:28px;font-size:12px">${u.photoURL?`<img src="${u.photoURL}"/>`:( u.displayName||"?")[0].toUpperCase()}</div>
+          ${u.displayName||"—"}
+        </td>
+        <td style="color:var(--muted);font-size:12px">${u.email||"—"}</td>
+        <td><span class="user-role-badge ${u.role==="admin"?"role-admin":u.role==="moderator"?"role-moderator":"role-user"}">${u.role==="admin"?"Admin":u.role==="moderator"?"Moderator":"Lid"}</span></td>
+        <td style="color:var(--muted);font-size:12px">${u.createdAt ? new Date(u.createdAt).toLocaleDateString("nl-BE") : "—"}</td>
+        <td>
+          <select onchange="changeUserRole('${uid}', this.value)" style="background:var(--surface);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px;font-size:12px">
+            <option value="user" ${(u.role||"user")==="user"?"selected":""}>Lid</option>
+            <option value="moderator" ${u.role==="moderator"?"selected":""}>Moderator</option>
+            <option value="admin" ${u.role==="admin"?"selected":""}>Admin</option>
+          </select>
+        </td>
+      </tr>`).join("");
+  };
+
+  window.changeUserRole = async function(uid, role) {
+    if (currentRole !== "admin") { toast("Alleen admins kunnen rollen wijzigen.", "err"); return; }
+    await update(ref(db, `users/${uid}`), { role });
+    toast(`Rol gewijzigd naar ${role} ✓`);
+  };
+
+  // ── Admin: contacts ────────────────────────────────────────
+  window.loadAdminContacts = async function() {
+    const snap = await get(ref(db, "contacts"));
+    const el = document.getElementById("adminContactsList");
+    if (!snap.exists()) { el.innerHTML = `<p style="color:var(--muted)">Geen berichten.</p>`; return; }
+    el.innerHTML = Object.entries(snap.val()).reverse().map(([id, c]) => `
+      <div class="comment-box">
+        <div class="comment-header">
+          <div class="comment-author">📬 ${c.name||"Anoniem"}</div>
+          <div class="comment-date" style="margin-left:auto">${c.date||""}</div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:6px">${c.email||""}</div>
+        <div class="comment-text">${c.message||""}</div>
+        <button class="btn btn-danger btn-sm" style="margin-top:10px" onclick="deleteContact('${id}')">Verwijderen</button>
+      </div>`).join("");
+  };
+
+  window.deleteContact = async function(id) {
+    await remove(ref(db, `contacts/${id}`));
+    toast("Bericht verwijderd."); loadAdminContacts();
+  };
+
+  // ── Contact form ───────────────────────────────────────────
+  window.sendContact = async function() {
+    const name = document.getElementById("contactName").value.trim();
+    const email = document.getElementById("contactEmail").value.trim();
+    const msg = document.getElementById("contactMsg").value.trim();
+    if (!name || !email || !msg) { toast("Vul alle velden in.", "err"); return; }
+    await push(ref(db, "contacts"), { name, email, message: msg, date: new Date().toLocaleDateString("nl-BE") });
+    toast("Bericht verzonden! ✓");
+    ["contactName","contactEmail","contactMsg"].forEach(id => document.getElementById(id).value="");
+  };
+
+  // ── Admin tab switch ───────────────────────────────────────
+  window.switchAdminTab = function(tab) {
+    ["overview","lines","users","contacts"].forEach(t => {
+      document.getElementById(`adminTab-${t}`).style.display = t===tab ? "" : "none";
+      document.getElementById(`tab-${t}`).classList.toggle("active", t===tab);
+    });
+    if (tab === "users") loadAdminUsers();
+    if (tab === "contacts") loadAdminContacts();
+  };
+
+  // ── Page switching ─────────────────────────────────────────
+  window.showPage = function(page) {
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.querySelectorAll(".nav-links a").forEach(a => a.classList.remove("active"));
+    const el = document.getElementById(`page-${page}`);
+    if (el) el.classList.add("active");
+    const navEl = document.getElementById(`nav-${page}`);
+    if (navEl) navEl.classList.add("active");
+    window.scrollTo(0,0);
+
+    if (page === "admin") {
+      if (currentRole !== "admin" && currentRole !== "moderator") {
+        document.getElementById("adminAccessDenied").style.display = "flex";
+        document.getElementById("adminPanel").style.display = "none";
+      } else {
+        document.getElementById("adminAccessDenied").style.display = "none";
+        document.getElementById("adminPanel").style.display = "grid";
+        loadStats();
+      }
+    }
+  };
+
   // ── Modal ──────────────────────────────────────────────────
-  window._atrTab = "login";
-  function openModal()  { document.getElementById("modalOverlay").classList.add("open"); }
-  function closeModal() { document.getElementById("modalOverlay").classList.remove("open"); }
-  function handleOverlayClick(e) { if (e.target === document.getElementById("modalOverlay")) closeModal(); }
-
-  function switchTab(tab) {
+  window.openModal  = () => document.getElementById("modalOverlay").classList.add("open");
+  window.closeModal = () => document.getElementById("modalOverlay").classList.remove("open");
+  window.handleOverlayClick = e => { if (e.target===document.getElementById("modalOverlay")) closeModal(); };
+  window.switchTab = tab => {
     window._atrTab = tab;
     document.getElementById("tabLogin").classList.toggle("active", tab==="login");
     document.getElementById("tabRegister").classList.toggle("active", tab==="register");
     document.getElementById("confirmField").style.display = tab==="register" ? "" : "none";
     document.getElementById("submitBtn").textContent = tab==="register" ? "Registreren" : "Inloggen";
-  }
+  };
 
   // ── Dropdown ───────────────────────────────────────────────
-  function toggleDropdown() {
-    document.getElementById("userDropdown").classList.toggle("open");
-  }
+  window.toggleDropdown = () => document.getElementById("userDropdown").classList.toggle("open");
   document.addEventListener("click", e => {
     const pill = document.getElementById("userPill");
     const dd   = document.getElementById("userDropdown");
-    if (!pill.contains(e.target) && !dd.contains(e.target)) dd.classList.remove("open");
+    if (pill && dd && !pill.contains(e.target) && !dd.contains(e.target)) dd.classList.remove("open");
   });
 </script>
-
 </body>
 </html>
