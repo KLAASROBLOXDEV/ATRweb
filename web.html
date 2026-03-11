@@ -435,42 +435,85 @@
 
 <!-- LIVE RITTEN -->
 <div class="page" id="page-live">
-  <div class="section">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
-      <div class="live-dot" style="width:12px;height:12px"></div>
-      <div class="section-label" style="margin:0">Live tracker</div>
-    </div>
-    <div class="section-title">Actieve Ritten</div>
-    <p class="section-sub">Realtime overzicht van alle busdrivers die momenteel een rit rijden via Roblox.</p>
-
-    <!-- Busdriver eigen panel (alleen zichtbaar als je busdriver bent) -->
-    <div id="myRoutePanel" style="display:none">
-      <div class="my-route-panel">
-        <h3>🚌 Mijn Rit</h3>
-        <div id="myRouteStatus" style="margin-bottom:16px">
-          <span class="status-badge status-finished">Geen actieve rit</span>
+  <!-- BUSDRIVER PANEL (alleen zichtbaar als ingelogd + busdriver rol) -->
+  <div id="myRoutePanel" style="display:none">
+    <div style="background:rgba(46,204,113,.06);border-bottom:1px solid rgba(46,204,113,.2);padding:20px 40px">
+      <div style="max-width:1100px;margin:0 auto">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+          <div class="live-dot"></div>
+          <h3 style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;color:var(--green)">Jouw Rit Beheren</h3>
+          <div id="myRouteStatus" style="margin-left:auto"><span class="status-badge status-finished">Geen actieve rit</span></div>
         </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Selecteer lijn</label>
-            <select id="myLineSelect"><option value="">-- Kies een lijn --</option></select>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end">
+          <div class="form-group" style="margin:0">
+            <label>Roblox gebruikersnaam</label>
+            <input type="text" id="myRobloxName" placeholder="JouwRobloxNaam"/>
           </div>
-          <div class="form-group">
-            <label>Huidige halte</label>
+          <div class="form-group" style="margin:0">
+            <label>Lijn</label>
+            <select id="myLineSelect"><option value="">-- Kies lijn --</option></select>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>Starthalte</label>
             <input type="text" id="myCurrentStop" placeholder="bv. Centraal Station"/>
           </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-yellow" onclick="startRoute()">▶ Start</button>
+            <button class="btn btn-ghost" onclick="updateStop()">📍 Update halte</button>
+            <button class="btn btn-danger" onclick="endRoute()">■ Stop</button>
+          </div>
         </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-yellow" onclick="startRoute()">▶ Route Starten</button>
-          <button class="btn btn-ghost" onclick="updateStop()">📍 Halte Updaten</button>
-          <button class="btn btn-danger" onclick="endRoute()">■ Route Beëindigen</button>
-        </div>
-        <p style="font-size:12px;color:var(--muted);margin-top:12px">💡 Of start je rit via Roblox — dan wordt alles automatisch bijgewerkt.</p>
       </div>
     </div>
+  </div>
 
-    <div id="liveGrid" class="live-grid">
-      <div class="empty-state"><div class="icon">🚌</div><p>Geen actieve ritten op dit moment.</p></div>
+  <!-- ACCESS DENIED voor niet-busdrivers -->
+  <div id="liveAccessDenied" style="display:none" class="access-denied">
+    <div class="icon">🔒</div>
+    <h2>ALLEEN VOOR BUSDRIVERS</h2>
+    <p>Je hebt de busdriver rol nodig om de live kaart te zien. Vraag een admin om jou de rol toe te wijzen.</p>
+    <button class="btn btn-ghost" onclick="showPage('home')">Terug naar home</button>
+  </div>
+
+  <!-- LOGIN vereist -->
+  <div id="liveLoginRequired" style="display:none" class="access-denied">
+    <div class="icon">🚌</div>
+    <h2>LOG IN OM TE KIJKEN</h2>
+    <p>Je moet ingelogd zijn als busdriver om de live tracker te zien.</p>
+    <button class="btn btn-yellow" onclick="openModal()">Inloggen</button>
+  </div>
+
+  <!-- KAART + RITTEN (alleen voor busdrivers/staff) -->
+  <div id="liveContent" style="display:none;padding:24px 40px;max-width:1300px;margin:0 auto">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
+      <div class="live-dot" style="width:12px;height:12px"></div>
+      <div>
+        <div class="section-label" style="margin:0">Live tracker</div>
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;line-height:1">Actieve Ritten</h2>
+      </div>
+      <div id="liveCount" style="margin-left:auto;background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:4px 14px;font-size:13px;color:var(--muted)">0 actief</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start">
+
+      <!-- KAART -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden">
+        <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+          <span style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:16px">🗺️ Lijn 1 – Kaart</span>
+          <span style="font-size:11px;color:var(--muted)">Roblox World Map</span>
+        </div>
+        <div style="position:relative;background:#1a1f2e">
+          <canvas id="mapCanvas" width="700" height="480" style="width:100%;display:block"></canvas>
+        </div>
+      </div>
+
+      <!-- RITTEN LIJST -->
+      <div>
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;margin-bottom:12px">Actieve Bestuurders</div>
+        <div id="liveGrid" style="display:flex;flex-direction:column;gap:12px">
+          <div class="empty-state" style="padding:30px"><div class="icon">🚌</div><p>Geen actieve ritten.</p></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1060,15 +1103,143 @@
   });
 
   // ══════════════════════════════════════════════════════════
-  // LIVE RITTEN
+  // LIVE RITTEN + KAART
   // ══════════════════════════════════════════════════════════
 
-  // Vul lijn selector in busdriver panel
+  // Lijn 1 haltes met canvas coördinaten (gesimuleerde Roblox map)
+  // X/Y zijn canvas posities (700x480 canvas)
+  const LINE1_STOPS = [
+    { name: "Centraal Station",  x: 80,  y: 240 },
+    { name: "Astridplein",       x: 160, y: 210 },
+    { name: "Opera",             x: 230, y: 190 },
+    { name: "Meir",              x: 310, y: 175 },
+    { name: "Groenplaats",       x: 390, y: 180 },
+    { name: "Grote Markt",       x: 450, y: 195 },
+    { name: "Suikerrui",         x: 510, y: 220 },
+    { name: "Sint-Jansvliet",    x: 560, y: 255 },
+    { name: "Linkeroever",       x: 630, y: 280 },
+  ];
+
+  // Teken de kaart op canvas
+  function drawMap(activeRoutes) {
+    const canvas = document.getElementById("mapCanvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const W = canvas.width, H = canvas.height;
+
+    // Achtergrond
+    ctx.fillStyle = "#1a1f2e";
+    ctx.fillRect(0, 0, W, H);
+
+    // Grid
+    ctx.strokeStyle = "rgba(255,255,255,0.04)";
+    ctx.lineWidth = 1;
+    for (let x = 0; x < W; x += 50) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 50) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+    // Scheld rivier (decoratief)
+    ctx.beginPath();
+    ctx.moveTo(580, 200); ctx.bezierCurveTo(600,250, 620,300, 640,380);
+    ctx.strokeStyle = "rgba(33,150,243,0.25)";
+    ctx.lineWidth = 18;
+    ctx.lineCap = "round";
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(33,150,243,0.1)";
+    ctx.lineWidth = 30;
+    ctx.stroke();
+
+    // Lijn 1 spoor
+    ctx.beginPath();
+    LINE1_STOPS.forEach((s, i) => {
+      if (i === 0) ctx.moveTo(s.x, s.y);
+      else ctx.lineTo(s.x, s.y);
+    });
+    ctx.strokeStyle = "rgba(245,197,24,0.25)";
+    ctx.lineWidth = 6;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.stroke();
+    ctx.strokeStyle = "#f5c518";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Haltes tekenen
+    LINE1_STOPS.forEach((stop, i) => {
+      // Cirkel
+      ctx.beginPath();
+      ctx.arc(stop.x, stop.y, 7, 0, Math.PI * 2);
+      ctx.fillStyle = "#1a1f2e";
+      ctx.fill();
+      ctx.strokeStyle = "#f5c518";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Naam
+      ctx.font = "bold 10px Barlow, sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,0.7)";
+      ctx.textAlign = i < 5 ? "left" : "right";
+      const tx = i < 5 ? stop.x + 12 : stop.x - 12;
+      const ty = stop.y - 10;
+      ctx.fillText(stop.name, tx, ty);
+    });
+
+    // Label lijn 1
+    ctx.font = "bold 13px Bebas Neue, sans-serif";
+    ctx.fillStyle = "#f5c518";
+    ctx.textAlign = "left";
+    ctx.fillText("LIJN 1", 20, 30);
+
+    // Actieve bussen tekenen
+    if (activeRoutes) {
+      Object.entries(activeRoutes).forEach(([uid, r]) => {
+        if (r.status === "finished") return;
+        // Vind halte positie
+        const stopData = LINE1_STOPS.find(s => s.name.toLowerCase() === (r.currentStop||"").toLowerCase())
+                      || LINE1_STOPS[0];
+
+        // Bus icoontje (gekleurde cirkel met schaduwen)
+        const bx = stopData.x, by = stopData.y;
+
+        // Glow
+        const grd = ctx.createRadialGradient(bx, by, 2, bx, by, 20);
+        grd.addColorStop(0, "rgba(46,204,113,0.4)");
+        grd.addColorStop(1, "rgba(46,204,113,0)");
+        ctx.beginPath();
+        ctx.arc(bx, by, 20, 0, Math.PI * 2);
+        ctx.fillStyle = grd;
+        ctx.fill();
+
+        // Bus cirkel
+        ctx.beginPath();
+        ctx.arc(bx, by, 11, 0, Math.PI * 2);
+        ctx.fillStyle = "#2ecc71";
+        ctx.fill();
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Bus emoji/tekst
+        ctx.font = "bold 11px sans-serif";
+        ctx.fillStyle = "#000";
+        ctx.textAlign = "center";
+        ctx.fillText("🚌", bx, by + 4);
+
+        // Naam boven bus
+        ctx.font = "bold 10px Barlow, sans-serif";
+        ctx.fillStyle = "#fff";
+        ctx.textAlign = "center";
+        const label = r.robloxName || r.driverName || "?";
+        ctx.fillText(label.length > 10 ? label.slice(0,10)+"…" : label, bx, by - 16);
+      });
+    }
+  }
+
+  // Vul lijn selector
   async function fillLineSelect() {
     const snap = await get(ref(db, "lines"));
     const sel = document.getElementById("myLineSelect");
     if (!sel) return;
-    sel.innerHTML = '<option value="">-- Kies een lijn --</option>';
+    sel.innerHTML = '<option value="">-- Kies lijn --</option>';
     if (snap.exists()) {
       Object.entries(snap.val()).forEach(([id, l]) => {
         sel.innerHTML += `<option value="${id}">${l.number} – ${l.name}</option>`;
@@ -1080,123 +1251,108 @@
   function loadLiveRitten() {
     onValue(ref(db, "live_routes"), snap => {
       const grid = document.getElementById("liveGrid");
-      if (!grid) return;
-      if (!snap.exists()) {
-        grid.innerHTML = `<div class="empty-state"><div class="icon">🚌</div><p>Geen actieve ritten op dit moment.</p></div>`;
-        return;
-      }
-      const routes = snap.val();
+      const countEl = document.getElementById("liveCount");
+      const routes = snap.exists() ? snap.val() : {};
       const active = Object.entries(routes).filter(([,r]) => r.status !== "finished");
+
+      if (countEl) countEl.textContent = active.length + " actief";
+
+      // Update kaart
+      drawMap(routes);
+
+      if (!grid) return;
       if (!active.length) {
-        grid.innerHTML = `<div class="empty-state"><div class="icon">🚌</div><p>Geen actieve ritten op dit moment.</p></div>`;
+        grid.innerHTML = `<div class="empty-state" style="padding:30px"><div class="icon">🚌</div><p>Geen actieve ritten.</p></div>`;
         return;
       }
       grid.innerHTML = active.map(([id, r]) => {
-        const statusClass = r.status === "driving" ? "driving" : r.status === "stopped" ? "stopped" : "finished";
-        const dotClass    = r.status === "driving" ? "" : r.status === "stopped" ? "stopped" : "finished";
-        const badgeClass  = r.status === "driving" ? "status-driving" : r.status === "stopped" ? "status-stopped" : "status-finished";
-        const statusLabel = r.status === "driving" ? "● Rijdend" : r.status === "stopped" ? "● Gestopt" : "Klaar";
-        const timeAgo = r.updatedAt ? Math.floor((Date.now() - r.updatedAt) / 60000) + " min geleden" : "—";
-        return `<div class="driver-card ${statusClass}">
+        const badgeClass  = r.status === "driving" ? "status-driving" : "status-stopped";
+        const statusLabel = r.status === "driving" ? "● Rijdend" : "● Gestopt";
+        const timeAgo = r.updatedAt ? Math.floor((Date.now() - r.updatedAt) / 60000) + " min" : "—";
+        return `<div class="driver-card ${r.status === "driving" ? "driving" : "stopped"}">
           <div class="driver-card-header">
             <div class="driver-av">${r.photoURL ? `<img src="${r.photoURL}"/>` : (r.driverName||"?")[0].toUpperCase()}</div>
             <div class="driver-info">
               <div class="driver-name">${r.driverName||"Onbekend"}</div>
-              <div class="driver-roblox">🎮 ${r.robloxName||"Roblox speler"}</div>
+              <div class="driver-roblox">🎮 ${r.robloxName||"—"}</div>
             </div>
-            <div class="live-dot ${dotClass}"></div>
+            <div class="live-dot ${r.status !== "driving" ? "stopped" : ""}"></div>
           </div>
-          <div class="driver-stat">
-            <span class="driver-stat-label">Lijn</span>
-            <span class="driver-stat-value"><span class="line-badge" style="background:${r.lineColor||"#f5c518"}">${r.lineNumber||"?"}</span> ${r.lineName||"—"}</span>
+          <div class="driver-stat"><span class="driver-stat-label">Lijn</span>
+            <span class="driver-stat-value"><span class="line-badge" style="background:${r.lineColor||"#f5c518"};margin-right:4px">${r.lineNumber||"?"}</span>${r.lineName||"—"}</span>
           </div>
-          <div class="driver-stat">
-            <span class="driver-stat-label">Huidige halte</span>
+          <div class="driver-stat"><span class="driver-stat-label">Halte</span>
             <span class="driver-stat-value">📍 ${r.currentStop||"—"}</span>
           </div>
-          <div class="driver-stat">
-            <span class="driver-stat-label">Status</span>
+          <div class="driver-stat"><span class="driver-stat-label">Status</span>
             <span class="status-badge ${badgeClass}">${statusLabel}</span>
           </div>
-          <div class="driver-stat">
-            <span class="driver-stat-label">Bijgewerkt</span>
-            <span class="driver-stat-value" style="color:var(--muted);font-size:12px">${timeAgo}</span>
+          <div class="driver-stat"><span class="driver-stat-label">Update</span>
+            <span style="font-size:12px;color:var(--muted)">${timeAgo} geleden</span>
           </div>
         </div>`;
       }).join("");
     });
   }
 
-  // Start route (vanuit website)
+  // Start route
   window.startRoute = async function() {
     if (!currentUser) { toast("Log eerst in.", "err"); return; }
-    if (currentRole !== "busdriver" && currentRole !== "admin" && currentRole !== "moderator") {
-      toast("Je hebt geen busdriver rol.", "err"); return;
-    }
-    const lineId = document.getElementById("myLineSelect").value;
-    const stop   = document.getElementById("myCurrentStop").value.trim();
-    if (!lineId) { toast("Kies eerst een lijn.", "err"); return; }
-
+    const robloxName = document.getElementById("myRobloxName").value.trim();
+    const lineId     = document.getElementById("myLineSelect").value;
+    const stop       = document.getElementById("myCurrentStop").value.trim();
+    if (!robloxName) { toast("Vul je Roblox gebruikersnaam in.", "err"); return; }
+    if (!lineId)     { toast("Kies een lijn.", "err"); return; }
     const lineSnap = await get(ref(db, `lines/${lineId}`));
+    if (!lineSnap.exists()) { toast("Lijn niet gevonden.", "err"); return; }
     const line = lineSnap.val();
-
     await set(ref(db, `live_routes/${currentUser.uid}`), {
       driverName:  currentUser.displayName || currentUser.email.split("@")[0],
       photoURL:    currentUser.photoURL || "",
-      robloxName:  currentUser.displayName || "—",
+      robloxName,
       uid:         currentUser.uid,
-      lineId,
-      lineNumber:  line.number || "?",
-      lineName:    line.name || "—",
-      lineColor:   line.color || "#f5c518",
-      currentStop: stop || "Vertrekhalte",
+      lineId, lineNumber: line.number||"?", lineName: line.name||"—", lineColor: line.color||"#f5c518",
+      currentStop: stop || LINE1_STOPS[0].name,
       status:      "driving",
-      startedAt:   Date.now(),
-      updatedAt:   Date.now()
+      startedAt:   Date.now(), updatedAt: Date.now()
     });
     toast("Rit gestart! ▶");
     document.getElementById("myRouteStatus").innerHTML = `<span class="status-badge status-driving">● Rijdend</span>`;
   };
 
-  // Update halte (vanuit website)
+  // Update halte
   window.updateStop = async function() {
     if (!currentUser) return;
     const stop = document.getElementById("myCurrentStop").value.trim();
     if (!stop) { toast("Typ een haltennaam.", "err"); return; }
-    await update(ref(db, `live_routes/${currentUser.uid}`), {
-      currentStop: stop,
-      status:      "driving",
-      updatedAt:   Date.now()
-    });
+    await update(ref(db, `live_routes/${currentUser.uid}`), { currentStop: stop, status: "driving", updatedAt: Date.now() });
     toast("Halte bijgewerkt ✓");
   };
 
-  // Beëindig route
+  // Stop route
   window.endRoute = async function() {
     if (!currentUser) return;
-    await update(ref(db, `live_routes/${currentUser.uid}`), {
-      status:    "finished",
-      updatedAt: Date.now()
-    });
+    await update(ref(db, `live_routes/${currentUser.uid}`), { status: "finished", updatedAt: Date.now() });
     toast("Rit beëindigd.");
     document.getElementById("myRouteStatus").innerHTML = `<span class="status-badge status-finished">Klaar</span>`;
-    // Na 10 seconden verwijderen
-    setTimeout(async () => {
-      await remove(ref(db, `live_routes/${currentUser.uid}`));
-    }, 10000);
+    setTimeout(async () => { await remove(ref(db, `live_routes/${currentUser.uid}`)); }, 15000);
   };
 
-  // Laad live pagina wanneer je er naartoe gaat
+  // Laad live pagina
   const origShowPage = window.showPage;
   window.showPage = function(page) {
     origShowPage(page);
     if (page === "live") {
-      loadLiveRitten();
-      fillLineSelect();
-      // Toon busdriver panel als van toepassing
-      const isBusdriver = currentRole === "busdriver" || currentRole === "admin" || currentRole === "moderator";
-      const panel = document.getElementById("myRoutePanel");
-      if (panel) panel.style.display = isBusdriver && currentUser ? "" : "none";
+      const isBusdriver = currentUser && (currentRole === "busdriver" || currentRole === "admin" || currentRole === "moderator");
+      document.getElementById("liveLoginRequired").style.display = !currentUser ? "flex" : "none";
+      document.getElementById("liveAccessDenied").style.display  = currentUser && !isBusdriver ? "flex" : "none";
+      document.getElementById("liveContent").style.display        = isBusdriver ? "" : "none";
+      document.getElementById("myRoutePanel").style.display       = isBusdriver ? "" : "none";
+      if (isBusdriver) {
+        loadLiveRitten();
+        fillLineSelect();
+        drawMap(null);
+      }
     }
   };
 </script>
