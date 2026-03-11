@@ -2,29 +2,27 @@ import express from "express";
 import { readFileSync } from "fs";
 import { createServer } from "http";
 
-const app = express();
+const app  = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// ─── Serve de HTML pagina ───────────────────────────────────────────────────
+// ─── Serve HTML ─────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {
   res.send(readFileSync("./web.html", "utf-8"));
 });
 
-// ─── API: verificeer Firebase token (server-side) ───────────────────────────
-app.post("/api/verify", async (req, res) => {
-  const { token } = req.body;
-  if (!token) return res.status(400).json({ error: "Geen token." });
-
-  // Zodra je firebase-admin installeert, uncomment dit:
-  // import admin from "firebase-admin";
-  // const decoded = await admin.auth().verifyIdToken(token);
-  // return res.json({ ok: true, user: decoded });
-
-  // Tijdelijke placeholder:
-  console.log("Token ontvangen:", token.slice(0, 20) + "...");
-  res.json({ ok: true, message: "Login geslaagd (placeholder)" });
+// ─── API: Roblox route tracker ───────────────────────────────────────────────
+// Ontvangt data van de Roblox ServerScript
+// Firebase wordt bijgewerkt via de client-side SDK in index.html
+// Als je firebase-admin wil gebruiken: npm install firebase-admin
+app.post("/api/route", async (req, res) => {
+  const data = req.body;
+  if (!data || !data.uid) return res.status(400).json({ error: "Geen uid." });
+  console.log(`[ATR] Route update: ${data.action} - ${data.robloxName || data.uid}`);
+  // De website (index.html) luistert realtime via Firebase client SDK
+  // Hier kan je eventueel firebase-admin toevoegen voor server-side schrijven
+  res.json({ ok: true, received: data });
 });
 
 createServer(app).listen(PORT, () => {
