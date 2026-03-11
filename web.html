@@ -1106,21 +1106,24 @@
   // LIVE RITTEN + KAART
   // ══════════════════════════════════════════════════════════
 
-  // Lijn 1 haltes met canvas coördinaten (gesimuleerde Roblox map)
-  // X/Y zijn canvas posities (700x480 canvas)
-  const LINE1_STOPS = [
-    { name: "Centraal Station",  x: 80,  y: 240 },
-    { name: "Astridplein",       x: 160, y: 210 },
-    { name: "Opera",             x: 230, y: 190 },
-    { name: "Meir",              x: 310, y: 175 },
-    { name: "Groenplaats",       x: 390, y: 180 },
-    { name: "Grote Markt",       x: 450, y: 195 },
-    { name: "Suikerrui",         x: 510, y: 220 },
-    { name: "Sint-Jansvliet",    x: 560, y: 255 },
-    { name: "Linkeroever",       x: 630, y: 280 },
-  ];
+  // ── ROBLOX COÖRDINATEN INSTELLING ──────────────────────────
+  // Pas deze grenzen aan op basis van jouw Roblox wereld
+  // Ga in Roblox Studio naar een hoek van je map en noteer de X en Z waarden
+  const ROBLOX_MAP = {
+    minX: -500,   // meest linkse X in Roblox
+    maxX:  500,   // meest rechtse X in Roblox
+    minZ: -500,   // meest bovenste Z in Roblox
+    maxZ:  500,   // meest onderste Z in Roblox
+  };
 
-  // Teken de kaart op canvas
+  // Converteer Roblox coördinaten naar canvas pixels
+  function robloxToCanvas(rx, rz, W, H) {
+    const px = ((rx - ROBLOX_MAP.minX) / (ROBLOX_MAP.maxX - ROBLOX_MAP.minX)) * W;
+    const py = ((rz - ROBLOX_MAP.minZ) / (ROBLOX_MAP.maxZ - ROBLOX_MAP.minZ)) * H;
+    return { x: Math.max(10, Math.min(W-10, px)), y: Math.max(10, Math.min(H-10, py)) };
+  }
+
+  // Teken de kaart
   function drawMap(activeRoutes) {
     const canvas = document.getElementById("mapCanvas");
     if (!canvas) return;
@@ -1128,171 +1131,101 @@
     const W = canvas.width, H = canvas.height;
 
     // Achtergrond
-    ctx.fillStyle = "#1a1f2e";
+    ctx.fillStyle = "#13151d";
     ctx.fillRect(0, 0, W, H);
 
     // Grid
     ctx.strokeStyle = "rgba(255,255,255,0.04)";
     ctx.lineWidth = 1;
-    for (let x = 0; x < W; x += 50) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
-    for (let y = 0; y < H; y += 50) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+    for (let x = 0; x < W; x += 60) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 60) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
 
-    // Scheld rivier (decoratief)
-    ctx.beginPath();
-    ctx.moveTo(580, 200); ctx.bezierCurveTo(600,250, 620,300, 640,380);
-    ctx.strokeStyle = "rgba(33,150,243,0.25)";
-    ctx.lineWidth = 18;
-    ctx.lineCap = "round";
-    ctx.stroke();
-    ctx.strokeStyle = "rgba(33,150,243,0.1)";
-    ctx.lineWidth = 30;
-    ctx.stroke();
-
-    // Lijn 1 spoor
-    ctx.beginPath();
-    LINE1_STOPS.forEach((s, i) => {
-      if (i === 0) ctx.moveTo(s.x, s.y);
-      else ctx.lineTo(s.x, s.y);
-    });
-    ctx.strokeStyle = "rgba(245,197,24,0.25)";
-    ctx.lineWidth = 6;
-    ctx.lineCap = "round";
-    ctx.lineJoin = "round";
-    ctx.stroke();
-    ctx.strokeStyle = "#f5c518";
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    // Haltes tekenen
-    LINE1_STOPS.forEach((stop, i) => {
-      // Cirkel
-      ctx.beginPath();
-      ctx.arc(stop.x, stop.y, 7, 0, Math.PI * 2);
-      ctx.fillStyle = "#1a1f2e";
-      ctx.fill();
-      ctx.strokeStyle = "#f5c518";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      // Naam
-      ctx.font = "bold 10px Barlow, sans-serif";
-      ctx.fillStyle = "rgba(255,255,255,0.7)";
-      ctx.textAlign = i < 5 ? "left" : "right";
-      const tx = i < 5 ? stop.x + 12 : stop.x - 12;
-      const ty = stop.y - 10;
-      ctx.fillText(stop.name, tx, ty);
-    });
-
-    // Label lijn 1
-    ctx.font = "bold 13px Bebas Neue, sans-serif";
-    ctx.fillStyle = "#f5c518";
+    // Coördinaten labels
+    ctx.font = "10px monospace";
+    ctx.fillStyle = "rgba(255,255,255,0.15)";
     ctx.textAlign = "left";
-    ctx.fillText("LIJN 1", 20, 30);
+    ctx.fillText(`X: ${ROBLOX_MAP.minX}`, 6, H - 6);
+    ctx.textAlign = "right";
+    ctx.fillText(`X: ${ROBLOX_MAP.maxX}`, W - 6, H - 6);
+    ctx.textAlign = "left";
+    ctx.fillText(`Z: ${ROBLOX_MAP.minZ}`, 6, 14);
 
-    // Actieve bussen tekenen
+    // ATR label
+    ctx.font = "bold 14px 'Bebas Neue', sans-serif";
+    ctx.fillStyle = "rgba(245,197,24,0.4)";
+    ctx.textAlign = "left";
+    ctx.fillText("ATR – LIVE KAART", 14, H - 20);
+
+    // Noord indicator
+    ctx.font = "bold 11px sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.3)";
+    ctx.textAlign = "right";
+    ctx.fillText("▲ N", W - 14, 20);
+
+    // Teken bussen
     if (activeRoutes) {
       Object.entries(activeRoutes).forEach(([uid, r]) => {
         if (r.status === "finished") return;
-        // Vind halte positie
-        const stopData = LINE1_STOPS.find(s => s.name.toLowerCase() === (r.currentStop||"").toLowerCase())
-                      || LINE1_STOPS[0];
 
-        // Bus icoontje (gekleurde cirkel met schaduwen)
-        const bx = stopData.x, by = stopData.y;
+        // Gebruik echte Roblox coördinaten als beschikbaar, anders midden van kaart
+        const rx = typeof r.robloxX === "number" ? r.robloxX : 0;
+        const rz = typeof r.robloxZ === "number" ? r.robloxZ : 0;
+        const pos = robloxToCanvas(rx, rz, W, H);
+        const bx = pos.x, by = pos.y;
 
-        // Glow
-        const grd = ctx.createRadialGradient(bx, by, 2, bx, by, 20);
-        grd.addColorStop(0, "rgba(46,204,113,0.4)");
-        grd.addColorStop(1, "rgba(46,204,113,0)");
+        // Glow rond bus
+        const grd = ctx.createRadialGradient(bx, by, 2, bx, by, 24);
+        grd.addColorStop(0, r.status === "driving" ? "rgba(46,204,113,0.5)" : "rgba(245,197,24,0.5)");
+        grd.addColorStop(1, "rgba(0,0,0,0)");
         ctx.beginPath();
-        ctx.arc(bx, by, 20, 0, Math.PI * 2);
+        ctx.arc(bx, by, 24, 0, Math.PI * 2);
         ctx.fillStyle = grd;
         ctx.fill();
 
         // Bus cirkel
         ctx.beginPath();
-        ctx.arc(bx, by, 11, 0, Math.PI * 2);
-        ctx.fillStyle = "#2ecc71";
+        ctx.arc(bx, by, 13, 0, Math.PI * 2);
+        ctx.fillStyle = r.status === "driving" ? "#2ecc71" : "#f5c518";
         ctx.fill();
         ctx.strokeStyle = "#fff";
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Bus emoji/tekst
-        ctx.font = "bold 11px sans-serif";
-        ctx.fillStyle = "#000";
+        // Bus icoontje
+        ctx.font = "13px sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText("🚌", bx, by + 4);
+        ctx.fillText("🚌", bx + 1, by + 5);
 
-        // Naam boven bus
-        ctx.font = "bold 10px Barlow, sans-serif";
+        // Naam label boven bus
+        const label = (r.robloxName || r.driverName || "?").slice(0, 12);
+        ctx.font = "bold 11px Barlow, sans-serif";
+        ctx.textAlign = "center";
+        // Label achtergrond
+        const lw = ctx.measureText(label).width + 10;
+        ctx.fillStyle = "rgba(0,0,0,0.7)";
+        ctx.beginPath();
+        ctx.roundRect(bx - lw/2, by - 32, lw, 16, 4);
+        ctx.fill();
         ctx.fillStyle = "#fff";
-        ctx.textAlign = "center";
-        const label = r.robloxName || r.driverName || "?";
-        ctx.fillText(label.length > 10 ? label.slice(0,10)+"…" : label, bx, by - 16);
+        ctx.fillText(label, bx, by - 20);
+
+        // Coördinaten onder bus
+        ctx.font = "9px monospace";
+        ctx.fillStyle = "rgba(255,255,255,0.4)";
+        ctx.fillText(`${Math.round(rx)}, ${Math.round(rz)}`, bx, by + 26);
       });
     }
-  }
 
-  // Vul lijn selector
-  async function fillLineSelect() {
-    const snap = await get(ref(db, "lines"));
-    const sel = document.getElementById("myLineSelect");
-    if (!sel) return;
-    sel.innerHTML = '<option value="">-- Kies lijn --</option>';
-    if (snap.exists()) {
-      Object.entries(snap.val()).forEach(([id, l]) => {
-        sel.innerHTML += `<option value="${id}">${l.number} – ${l.name}</option>`;
-      });
+    // Als geen actieve ritten: lege staat
+    if (!activeRoutes || !Object.values(activeRoutes).some(r => r.status !== "finished")) {
+      ctx.font = "14px Barlow, sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,0.2)";
+      ctx.textAlign = "center";
+      ctx.fillText("Geen actieve bussen", W/2, H/2 - 10);
+      ctx.font = "12px Barlow, sans-serif";
+      ctx.fillStyle = "rgba(255,255,255,0.1)";
+      ctx.fillText("Start een rit om je bus te zien", W/2, H/2 + 12);
     }
-  }
-
-  // Laad live ritten realtime
-  function loadLiveRitten() {
-    onValue(ref(db, "live_routes"), snap => {
-      const grid = document.getElementById("liveGrid");
-      const countEl = document.getElementById("liveCount");
-      const routes = snap.exists() ? snap.val() : {};
-      const active = Object.entries(routes).filter(([,r]) => r.status !== "finished");
-
-      if (countEl) countEl.textContent = active.length + " actief";
-
-      // Update kaart
-      drawMap(routes);
-
-      if (!grid) return;
-      if (!active.length) {
-        grid.innerHTML = `<div class="empty-state" style="padding:30px"><div class="icon">🚌</div><p>Geen actieve ritten.</p></div>`;
-        return;
-      }
-      grid.innerHTML = active.map(([id, r]) => {
-        const badgeClass  = r.status === "driving" ? "status-driving" : "status-stopped";
-        const statusLabel = r.status === "driving" ? "● Rijdend" : "● Gestopt";
-        const timeAgo = r.updatedAt ? Math.floor((Date.now() - r.updatedAt) / 60000) + " min" : "—";
-        return `<div class="driver-card ${r.status === "driving" ? "driving" : "stopped"}">
-          <div class="driver-card-header">
-            <div class="driver-av">${r.photoURL ? `<img src="${r.photoURL}"/>` : (r.driverName||"?")[0].toUpperCase()}</div>
-            <div class="driver-info">
-              <div class="driver-name">${r.driverName||"Onbekend"}</div>
-              <div class="driver-roblox">🎮 ${r.robloxName||"—"}</div>
-            </div>
-            <div class="live-dot ${r.status !== "driving" ? "stopped" : ""}"></div>
-          </div>
-          <div class="driver-stat"><span class="driver-stat-label">Lijn</span>
-            <span class="driver-stat-value"><span class="line-badge" style="background:${r.lineColor||"#f5c518"};margin-right:4px">${r.lineNumber||"?"}</span>${r.lineName||"—"}</span>
-          </div>
-          <div class="driver-stat"><span class="driver-stat-label">Halte</span>
-            <span class="driver-stat-value">📍 ${r.currentStop||"—"}</span>
-          </div>
-          <div class="driver-stat"><span class="driver-stat-label">Status</span>
-            <span class="status-badge ${badgeClass}">${statusLabel}</span>
-          </div>
-          <div class="driver-stat"><span class="driver-stat-label">Update</span>
-            <span style="font-size:12px;color:var(--muted)">${timeAgo} geleden</span>
-          </div>
-        </div>`;
-      }).join("");
-    });
   }
 
   // Start route
@@ -1312,7 +1245,9 @@
       robloxName,
       uid:         currentUser.uid,
       lineId, lineNumber: line.number||"?", lineName: line.name||"—", lineColor: line.color||"#f5c518",
-      currentStop: stop || LINE1_STOPS[0].name,
+      currentStop: stop || "Vertrek",
+      robloxX:     0,
+      robloxZ:     0,
       status:      "driving",
       startedAt:   Date.now(), updatedAt: Date.now()
     });
@@ -1324,9 +1259,11 @@
   window.updateStop = async function() {
     if (!currentUser) return;
     const stop = document.getElementById("myCurrentStop").value.trim();
-    if (!stop) { toast("Typ een haltennaam.", "err"); return; }
-    await update(ref(db, `live_routes/${currentUser.uid}`), { currentStop: stop, status: "driving", updatedAt: Date.now() });
-    toast("Halte bijgewerkt ✓");
+    if (!stop) { toast("Typ een locatie.", "err"); return; }
+    await update(ref(db, `live_routes/${currentUser.uid}`), {
+      currentStop: stop, status: "driving", updatedAt: Date.now()
+    });
+    toast("Locatie bijgewerkt ✓");
   };
 
   // Stop route
