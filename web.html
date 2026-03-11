@@ -578,14 +578,16 @@
           photoURL:    user.photoURL || "",
           lastLogin:   serverTimestamp()
         });
-        const existingRole = snap.val().role;
-        if (!existingRole) {
-          // Heeft nog geen rol (bijv. oude accounts) → zet op "user"
-          await update(userRef, { role: "user" });
-          currentRole = "user";
-        } else {
-          currentRole = existingRole;
-        }
+      }
+
+      // Altijd de rol VERS ophalen uit Firebase (niet uit cache)
+      const freshSnap = await get(ref(db, `users/${user.uid}`));
+      const freshData = freshSnap.val() || {};
+      if (!freshData.role) {
+        await update(userRef, { role: "user" });
+        currentRole = "user";
+      } else {
+        currentRole = freshData.role;
       }
 
       renderUserNav(user, currentRole);
