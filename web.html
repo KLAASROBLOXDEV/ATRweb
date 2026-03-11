@@ -555,27 +555,38 @@
   onAuthStateChanged(auth, async user => {
     currentUser = user;
     if (user) {
-      // Save/update user in DB
-      await set(ref(db, `users/${user.uid}`), {
-        displayName: user.displayName || user.email.split("@")[0],
-        email:       user.email,
-        photoURL:    user.photoURL || "",
-        lastLogin:   serverTimestamp(),
-        uid:         user.uid,
-        // Only set role if it doesn't exist yet
-      }, { merge: true }).catch(() => {});
-
-      // Actually use update to not overwrite role
       const userRef = ref(db, `users/${user.uid}`);
       const snap = await get(userRef);
-      if (!snap.exists()) {
-        await set(userRef, { displayName: user.displayName || user.email.split("@")[0], email: user.email, photoURL: user.photoURL||"", uid: user.uid, role:"user", createdAt: serverTimestamp() });
-      } else {
-        await update(userRef, { displayName: user.displayName||user.email.split("@")[0], email:user.email, photoURL:user.photoURL||"", lastLogin: serverTimestamp() });
-      }
 
-      const roleSnap = await get(ref(db, `users/${user.uid}/role`));
-      currentRole = roleSnap.val() || "user";
+      if (!snap.exists()) {
+        // Nieuw account: aanmaken met rol "user"
+        await set(userRef, {
+          displayName: user.displayName || user.email.split("@")[0],
+          email:       user.email,
+          photoURL:    user.photoURL || "",
+          uid:         user.uid,
+          role:        "user",
+          createdAt:   serverTimestamp(),
+          lastLogin:   serverTimestamp()
+        });
+        currentRole = "user";
+      } else {
+        // Bestaand account: update info maar NOOIT de rol overschrijven
+        await update(userRef, {
+          displayName: user.displayName || user.email.split("@")[0],
+          email:       user.email,
+          photoURL:    user.photoURL || "",
+          lastLogin:   serverTimestamp()
+        });
+        const existingRole = snap.val().role;
+        if (!existingRole) {
+          // Heeft nog geen rol (bijv. oude accounts) → zet op "user"
+          await update(userRef, { role: "user" });
+          currentRole = "user";
+        } else {
+          currentRole = existingRole;
+        }
+      }
 
       renderUserNav(user, currentRole);
       closeModal();
