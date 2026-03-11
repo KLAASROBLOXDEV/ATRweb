@@ -557,12 +557,13 @@
     if (user) {
       const userRef = ref(db, `users/${user.uid}`);
 
-      // Stap 1: lees huidige data
-      const snap = await get(userRef);
+      // Stap 1: lees ALLEEN de rol op (apart pad, niet de hele user)
+      const roleSnap = await get(ref(db, `users/${user.uid}/role`));
+      const existingRole = roleSnap.val();
 
-      if (!snap.exists()) {
-        // Nieuw account aanmaken met rol "user"
-        await set(userRef, {
+      if (existingRole === null) {
+        // Gebruiker bestaat nog niet of heeft geen rol → aanmaken
+        await update(userRef, {
           displayName: user.displayName || user.email.split("@")[0],
           email:       user.email,
           photoURL:    user.photoURL || "",
@@ -573,17 +574,8 @@
         });
         currentRole = "user";
       } else {
-        // Bestaand account: ALLEEN naam/foto/email updaten, rol NOOIT aanraken
-        const existing = snap.val();
-        currentRole = existing.role || "user";
-
-        // Als er nog geen rol is, zet die dan
-        if (!existing.role) {
-          await update(userRef, { role: "user" });
-          currentRole = "user";
-        }
-
-        // Update profielinfo apart (zonder role te raken)
+        // Rol bestaat al → NOOIT aanraken, alleen profiel updaten
+        currentRole = existingRole;
         await update(userRef, {
           displayName: user.displayName || user.email.split("@")[0],
           email:       user.email,
