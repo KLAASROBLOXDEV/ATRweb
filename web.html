@@ -453,7 +453,7 @@
           <div class="form-group" style="margin:0">
             <label>Lijn</label>
             <select id="myLineSelect" style="background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;width:100%;outline:none">
-              <option value="">Laden...</option>
+              <option value="">-- Kies een lijn --</option>
             </select>
           </div>
           <div class="form-group" style="margin:0">
@@ -701,6 +701,7 @@
 
       renderUserNav(user, currentRole);
       closeModal();
+      fillLineSelect(); // direct laden zodra ingelogd
     } else {
       currentUser = null; currentRole = "user";
       document.getElementById("openLoginBtn").style.display = "";
@@ -1280,24 +1281,29 @@
   }
 
   // Vul lijn selector — altijd opnieuw laden uit Firebase
-  async function fillLineSelect() {
+  // Vul lijn select — realtime via onValue zodat het altijd bijgewerkt is
+  function fillLineSelect() {
     const sel = document.getElementById("myLineSelect");
     if (!sel) return;
-    sel.innerHTML = '<option value="">Laden...</option>';
-    try {
-      const snap = await get(ref(db, "lines"));
-      sel.innerHTML = '<option value="">-- Kies lijn --</option>';
-      if (snap.exists()) {
-        Object.entries(snap.val()).forEach(([id, l]) => {
-          sel.innerHTML += `<option value="${id}">${l.number || "?"} – ${l.name || "Naamloos"}</option>`;
-        });
-      } else {
-        sel.innerHTML = '<option value="">Geen lijnen — voeg eerst lijnen toe in admin</option>';
+    // Luister realtime naar lijnen
+    onValue(ref(db, "lines"), snap => {
+      const prev = sel.value; // bewaar huidige selectie
+      sel.innerHTML = '';
+      if (!snap.exists()) {
+        sel.innerHTML = '<option value="">Geen lijnen — voeg toe via Admin panel</option>';
+        return;
       }
-    } catch(e) {
-      sel.innerHTML = '<option value="">Fout bij laden</option>';
-      console.error("fillLineSelect:", e);
-    }
+      const first = document.createElement("option");
+      first.value = ""; first.textContent = "-- Kies een lijn --";
+      sel.appendChild(first);
+      Object.entries(snap.val()).forEach(([id, l]) => {
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = `${l.number || "?"} – ${l.name || "Naamloos"}`;
+        if (id === prev) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }, { onlyOnce: false });
   }
 
   // Start route
