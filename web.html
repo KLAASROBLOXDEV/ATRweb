@@ -556,38 +556,40 @@
     currentUser = user;
     if (user) {
       const userRef = ref(db, `users/${user.uid}`);
+
+      // Stap 1: lees huidige data
       const snap = await get(userRef);
 
       if (!snap.exists()) {
-        // Nieuw account: aanmaken met rol "user"
+        // Nieuw account aanmaken met rol "user"
         await set(userRef, {
           displayName: user.displayName || user.email.split("@")[0],
           email:       user.email,
           photoURL:    user.photoURL || "",
           uid:         user.uid,
           role:        "user",
-          createdAt:   serverTimestamp(),
-          lastLogin:   serverTimestamp()
+          createdAt:   Date.now(),
+          lastLogin:   Date.now()
         });
         currentRole = "user";
       } else {
-        // Bestaand account: update info maar NOOIT de rol overschrijven
+        // Bestaand account: ALLEEN naam/foto/email updaten, rol NOOIT aanraken
+        const existing = snap.val();
+        currentRole = existing.role || "user";
+
+        // Als er nog geen rol is, zet die dan
+        if (!existing.role) {
+          await update(userRef, { role: "user" });
+          currentRole = "user";
+        }
+
+        // Update profielinfo apart (zonder role te raken)
         await update(userRef, {
           displayName: user.displayName || user.email.split("@")[0],
           email:       user.email,
           photoURL:    user.photoURL || "",
-          lastLogin:   serverTimestamp()
+          lastLogin:   Date.now()
         });
-      }
-
-      // Altijd de rol VERS ophalen uit Firebase (niet uit cache)
-      const freshSnap = await get(ref(db, `users/${user.uid}`));
-      const freshData = freshSnap.val() || {};
-      if (!freshData.role) {
-        await update(userRef, { role: "user" });
-        currentRole = "user";
-      } else {
-        currentRole = freshData.role;
       }
 
       renderUserNav(user, currentRole);
