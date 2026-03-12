@@ -1225,46 +1225,107 @@
         const pos = robloxToCanvas(rx, rz, W, H);
         const bx = pos.x, by = pos.y;
 
-        // Glow rond bus
-        const grd = ctx.createRadialGradient(bx, by, 2, bx, by, 24);
-        grd.addColorStop(0, r.status === "driving" ? "rgba(46,204,113,0.5)" : "rgba(245,197,24,0.5)");
+        // Glow
+        const grd = ctx.createRadialGradient(bx, by, 2, bx, by, 28);
+        grd.addColorStop(0, r.status === "driving" ? "rgba(46,204,113,0.4)" : "rgba(245,197,24,0.4)");
         grd.addColorStop(1, "rgba(0,0,0,0)");
         ctx.beginPath();
-        ctx.arc(bx, by, 24, 0, Math.PI * 2);
+        ctx.arc(bx, by, 28, 0, Math.PI * 2);
         ctx.fillStyle = grd;
         ctx.fill();
 
-        // Bus cirkel
+        // ── Custom bus tekening ──────────────────────────────
+        const busColor  = r.status === "driving" ? "#2ecc71" : "#f5c518";
+        const darkColor = r.status === "driving" ? "#1a8a4a" : "#c89a00";
+        ctx.save();
+        ctx.translate(bx, by);
+
+        // Bus body (afgeronde rechthoek)
         ctx.beginPath();
-        ctx.arc(bx, by, 13, 0, Math.PI * 2);
-        ctx.fillStyle = r.status === "driving" ? "#2ecc71" : "#f5c518";
+        ctx.roundRect(-16, -10, 32, 20, 4);
+        ctx.fillStyle = busColor;
         ctx.fill();
         ctx.strokeStyle = "#fff";
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1.5;
         ctx.stroke();
 
-        // Bus icoontje
-        ctx.font = "13px sans-serif";
+        // Voorruit (links)
+        ctx.beginPath();
+        ctx.roundRect(-14, -8, 9, 9, 2);
+        ctx.fillStyle = "rgba(180,230,255,0.85)";
+        ctx.fill();
+        ctx.strokeStyle = darkColor;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Achterruit (rechts)
+        ctx.beginPath();
+        ctx.roundRect(5, -8, 9, 9, 2);
+        ctx.fillStyle = "rgba(180,230,255,0.85)";
+        ctx.fill();
+        ctx.strokeStyle = darkColor;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Deur streepje
+        ctx.beginPath();
+        ctx.moveTo(0, -1); ctx.lineTo(0, 9);
+        ctx.strokeStyle = darkColor;
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Wiel links
+        ctx.beginPath();
+        ctx.arc(-9, 10, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "#222";
+        ctx.fill();
+        ctx.strokeStyle = "#888";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        // Wiel links velg
+        ctx.beginPath();
+        ctx.arc(-9, 10, 2, 0, Math.PI * 2);
+        ctx.fillStyle = "#bbb";
+        ctx.fill();
+
+        // Wiel rechts
+        ctx.beginPath();
+        ctx.arc(9, 10, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "#222";
+        ctx.fill();
+        ctx.strokeStyle = "#888";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        // Wiel rechts velg
+        ctx.beginPath();
+        ctx.arc(9, 10, 2, 0, Math.PI * 2);
+        ctx.fillStyle = "#bbb";
+        ctx.fill();
+
+        // Lijn nummer op bus
+        ctx.font = "bold 8px 'Barlow Condensed', sans-serif";
+        ctx.fillStyle = "#000";
         ctx.textAlign = "center";
-        ctx.fillText("🚌", bx + 1, by + 5);
+        ctx.fillText(r.lineNumber || "1", 0, 6);
+
+        ctx.restore();
 
         // Naam label boven bus
-        const label = (r.robloxName || r.driverName || "?").slice(0, 12);
+        const label = (r.robloxName || r.driverName || "?").slice(0, 14);
         ctx.font = "bold 11px Barlow, sans-serif";
         ctx.textAlign = "center";
-        // Label achtergrond
-        const lw = ctx.measureText(label).width + 10;
-        ctx.fillStyle = "rgba(0,0,0,0.7)";
+        const lw = ctx.measureText(label).width + 12;
+        ctx.fillStyle = "rgba(0,0,0,0.75)";
         ctx.beginPath();
         ctx.roundRect(bx - lw/2, by - 32, lw, 16, 4);
         ctx.fill();
         ctx.fillStyle = "#fff";
         ctx.fillText(label, bx, by - 20);
 
-        // Coördinaten onder bus
+        // Coördinaten
         ctx.font = "9px monospace";
-        ctx.fillStyle = "rgba(255,255,255,0.4)";
-        ctx.fillText(`${Math.round(rx)}, ${Math.round(rz)}`, bx, by + 26);
+        ctx.fillStyle = "rgba(255,255,255,0.35)";
+        ctx.fillText(`${Math.round(rx)}, ${Math.round(rz)}`, bx, by + 28);
       });
     }
 
@@ -1419,8 +1480,8 @@
           <div class="driver-stat"><span class="driver-stat-label">Status</span>
             <span class="status-badge ${bc}">${lbl}</span>
           </div>
-          <div class="driver-stat"><span class="driver-stat-label">Update</span>
-            <span style="font-size:12px;color:var(--muted)">${ago} geleden</span>
+          <div class="driver-stat"><span class="driver-stat-label">Positie</span>
+            <span style="font-size:12px;color:var(--muted);font-family:monospace">X:${Math.round(r.robloxX||0)} Z:${Math.round(r.robloxZ||0)}</span>
           </div>
         </div>`;
       }).join("");
