@@ -1372,23 +1372,76 @@
     }, 15000);
   };
 
-  // Laad live pagina
+  // Laad live pagina — realtime listener die ook kaart hertekent
+  let liveUnsubscribe = null;
+
+  function loadLiveRitten() {
+    // Verwijder vorige listener als die er is
+    if (liveUnsubscribe) { liveUnsubscribe(); liveUnsubscribe = null; }
+
+    liveUnsubscribe = onValue(ref(db, "live_routes"), snap => {
+      const routes = snap.exists() ? snap.val() : {};
+      const active = Object.entries(routes).filter(([,r]) => r.status !== "finished");
+
+      // Update teller
+      const countEl = document.getElementById("liveCount");
+      if (countEl) countEl.textContent = active.length + " actief";
+
+      // Herteken kaart met nieuwe posities
+      drawMap(routes);
+
+      // Update lijst
+      const grid = document.getElementById("liveGrid");
+      if (!grid) return;
+      if (!active.length) {
+        grid.innerHTML = `<div class="empty-state" style="padding:30px"><div class="icon">🚌</div><p>Geen actieve ritten.</p></div>`;
+        return;
+      }
+      grid.innerHTML = active.map(([uid, r]) => {
+        const bc  = r.status === "driving" ? "status-driving" : "status-stopped";
+        const lbl = r.status === "driving" ? "● Rijdend" : "● Gestopt";
+        const ago = r.updatedAt ? Math.floor((Date.now() - r.updatedAt) / 1000) + "s" : "—";
+        return `<div class="driver-card ${r.status === "driving" ? "driving" : "stopped"}">
+          <div class="driver-card-header">
+            <div class="driver-av">${r.photoURL ? `<img src="${r.photoURL}"/>` : (r.driverName||"?")[0].toUpperCase()}</div>
+            <div class="driver-info">
+              <div class="driver-name">${r.driverName||"Onbekend"}</div>
+              <div class="driver-roblox">🎮 ${r.robloxName||"—"}</div>
+            </div>
+            <div class="live-dot ${r.status !== "driving" ? "stopped" : ""}"></div>
+          </div>
+          <div class="driver-stat"><span class="driver-stat-label">Lijn</span>
+            <span class="driver-stat-value"><span class="line-badge" style="background:${r.lineColor||"#f5c518"};margin-right:4px">${r.lineNumber||"?"}</span>${r.lineName||"—"}</span>
+          </div>
+          <div class="driver-stat"><span class="driver-stat-label">Positie</span>
+            <span class="driver-stat-value" style="font-family:monospace;font-size:12px">X:${Math.round(r.robloxX||0)} Z:${Math.round(r.robloxZ||0)}</span>
+          </div>
+          <div class="driver-stat"><span class="driver-stat-label">Status</span>
+            <span class="status-badge ${bc}">${lbl}</span>
+          </div>
+          <div class="driver-stat"><span class="driver-stat-label">Update</span>
+            <span style="font-size:12px;color:var(--muted)">${ago} geleden</span>
+          </div>
+        </div>`;
+      }).join("");
+    });
+  }
+
   const origShowPage = window.showPage;
   window.showPage = function(page) {
     origShowPage(page);
     if (page === "live") {
       const isBusdriver = currentUser && (currentRole === "busdriver" || currentRole === "admin" || currentRole === "moderator");
-      // Kaart is altijd zichtbaar voor iedereen
-      // Busdriver startpaneel alleen voor busdrivers/staff
       const panel = document.getElementById("myRoutePanel");
       if (panel) panel.style.display = isBusdriver ? "" : "none";
       const lookOnly = document.getElementById("liveLookOnly");
       if (lookOnly) lookOnly.style.display = !isBusdriver ? "" : "none";
-      // Altijd laden (ook voor bezoekers)
+      // Start realtime listener (hertekent kaart automatisch bij elke update)
       loadLiveRitten();
-      drawMap(null);
-      // Lijn select alleen vullen als busdriver
       if (isBusdriver) fillLineSelect();
+    } else {
+      // Stop listener als je weg gaat van de pagina
+      if (liveUnsubscribe) { liveUnsubscribe(); liveUnsubscribe = null; }
     }
   };
 </script>
