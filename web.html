@@ -1317,6 +1317,8 @@
     const lineSnap = await get(ref(db, `lines/${lineId}`));
     if (!lineSnap.exists()) { toast("Lijn niet gevonden.", "err"); return; }
     const line = lineSnap.val();
+
+    // 1. Maak live route aan op de kaart
     await set(ref(db, `live_routes/${currentUser.uid}`), {
       driverName:  currentUser.displayName || currentUser.email.split("@")[0],
       photoURL:    currentUser.photoURL || "",
@@ -1324,33 +1326,50 @@
       uid:         currentUser.uid,
       lineId, lineNumber: line.number||"?", lineName: line.name||"—", lineColor: line.color||"#f5c518",
       currentStop: stop || "Vertrek",
-      robloxX:     0,
-      robloxZ:     0,
-      status:      "driving",
-      startedAt:   Date.now(), updatedAt: Date.now()
+      robloxX: 0, robloxZ: 0,
+      status:  "driving",
+      startedAt: Date.now(), updatedAt: Date.now()
     });
-    toast("Rit gestart! ▶");
-    document.getElementById("myRouteStatus").innerHTML = `<span class="status-badge status-driving">● Rijdend</span>`;
-  };
 
-  // Update halte
-  window.updateStop = async function() {
-    if (!currentUser) return;
-    const stop = document.getElementById("myCurrentStop").value.trim();
-    if (!stop) { toast("Typ een locatie.", "err"); return; }
-    await update(ref(db, `live_routes/${currentUser.uid}`), {
-      currentStop: stop, status: "driving", updatedAt: Date.now()
+    // 2. Schrijf commando voor Roblox script (pollt op gebruikersnaam)
+    await set(ref(db, `roblox_commands/${robloxName.toLowerCase()}`), {
+      command:    "start",
+      uid:        currentUser.uid,
+      robloxName,
+      lineNumber: line.number||"?",
+      lineName:   line.name||"—",
+      lineColor:  line.color||"#f5c518",
+      issuedAt:   Date.now()
     });
-    toast("Locatie bijgewerkt ✓");
+
+    toast("Rit gestart! Roblox pikt dit op zodra je in de game bent. ▶");
+    document.getElementById("myRouteStatus").innerHTML = `<span class="status-badge status-driving">● Rijdend</span>`;
   };
 
   // Stop route
   window.endRoute = async function() {
     if (!currentUser) return;
-    await update(ref(db, `live_routes/${currentUser.uid}`), { status: "finished", updatedAt: Date.now() });
+    const robloxName = document.getElementById("myRobloxName").value.trim();
+
+    // Stop in Firebase
+    await update(ref(db, `live_routes/${currentUser.uid}`), {
+      status: "finished", updatedAt: Date.now()
+    });
+
+    // Stuur stop commando naar Roblox
+    if (robloxName) {
+      await set(ref(db, `roblox_commands/${robloxName.toLowerCase()}`), {
+        command: "stop", uid: currentUser.uid, issuedAt: Date.now()
+      });
+    }
+
     toast("Rit beëindigd.");
     document.getElementById("myRouteStatus").innerHTML = `<span class="status-badge status-finished">Klaar</span>`;
-    setTimeout(async () => { await remove(ref(db, `live_routes/${currentUser.uid}`)); }, 15000);
+
+    setTimeout(async () => {
+      await remove(ref(db, `live_routes/${currentUser.uid}`));
+      if (robloxName) await remove(ref(db, `roblox_commands/${robloxName.toLowerCase()}`));
+    }, 15000);
   };
 
   // Laad live pagina
